@@ -10,6 +10,7 @@ const wordBreakdownSchema = new mongoose.Schema(
 );
 
 const searchHistorySchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   inputText: { type: String, required: true },
   inputLanguage: { type: String, default: 'en' },
   translatedText: { type: String, default: '' },

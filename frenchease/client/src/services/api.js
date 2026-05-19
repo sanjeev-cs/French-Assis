@@ -2,6 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${API_URL}${path}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...options.headers
@@ -58,4 +59,28 @@ export const deleteHistory = async (id) => {
   return request(`/api/history/${id}`, {
     method: 'DELETE'
   });
+};
+
+export const registerUser = async ({ username, password }) => {
+  return request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, password })
+  });
+};
+
+export const loginUser = async ({ username, password }) => {
+  return request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password })
+  });
+};
+
+export const logoutUser = async () => {
+  return request('/api/auth/logout', {
+    method: 'POST'
+  });
+};
+
+export const fetchCurrentUser = async () => {
+  return request('/api/auth/me');
 };

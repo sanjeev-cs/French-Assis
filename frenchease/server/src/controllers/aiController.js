@@ -14,14 +14,18 @@ export const phonetics = async (req, res, next) => {
 
     const result = await getPhonetics(frenchText);
 
-    await updateHistoryEntry(historyId, {
-      phonetics: result.phonetic_transcription || '',
-      pronunciation_guide: result.pronunciation_guide || '',
-      word_breakdown: (result.word_breakdown || []).map((item) => ({
-        word: item.word || '',
-        translation: item.english_hint || '',
-        phonetic: item.phonetic || ''
-      }))
+    await updateHistoryEntry({
+      historyId,
+      userId: req.user.id,
+      updates: {
+        phonetics: result.phonetic_transcription || '',
+        pronunciation_guide: result.pronunciation_guide || '',
+        word_breakdown: (result.word_breakdown || []).map((item) => ({
+          word: item.word || '',
+          translation: item.english_hint || '',
+          phonetic: item.phonetic || ''
+        }))
+      }
     });
 
     res.status(200).json(result);
@@ -41,8 +45,12 @@ export const aiTip = async (req, res, next) => {
     }
 
     const result = await getAiTip(word, translation);
-    await updateHistoryEntry(historyId, {
-      ai_tip: JSON.stringify(result)
+    await updateHistoryEntry({
+      historyId,
+      userId: req.user.id,
+      updates: {
+        ai_tip: JSON.stringify(result)
+      }
     });
 
     res.status(200).json(result);

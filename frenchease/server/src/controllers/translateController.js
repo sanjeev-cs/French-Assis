@@ -21,6 +21,7 @@ export const translateText = async (req, res, next) => {
     const frenchText = sourceLang === 'fr' ? text : translation.translatedText;
     const englishText = sourceLang === 'en' ? text : translation.translatedText;
     const history = await createHistoryEntry({
+      userId: req.user.id,
       inputText: text,
       inputLanguage: sourceLang,
       translatedText: translation.translatedText
