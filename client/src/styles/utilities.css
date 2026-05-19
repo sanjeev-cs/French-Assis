@@ -105,6 +105,16 @@
   color: var(--color-danger);
 }
 
+.modal-actions .modal-primary {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.modal-actions .modal-primary:hover {
+  background: #3d5ce5;
+}
+
 .modal-actions .modal-confirm:hover {
   background: rgba(229, 72, 77, 0.12);
 }

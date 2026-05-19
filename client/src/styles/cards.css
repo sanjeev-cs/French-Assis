@@ -2,6 +2,7 @@
   display: grid;
   gap: 14px;
   padding-bottom: 32px;
+  min-width: 0;
 }
 
 .card,
@@ -14,6 +15,7 @@
 
 .card {
   padding: clamp(16px, 2.2vw, 22px);
+  min-width: 0;
 }
 
 .result-card {
@@ -35,12 +37,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .translation-path {
   margin: 0 0 8px;
   color: var(--color-text-muted);
   font-size: 0.85rem;
+  overflow-wrap: anywhere;
 }
 
 .language-chip {
@@ -58,6 +62,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .translated-line h2 {
@@ -66,6 +71,7 @@
   font-size: clamp(1.4rem, 1.1rem + 1vw, 1.7rem);
   font-weight: 700;
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .pronunciation-pill,
@@ -155,6 +161,7 @@
   margin: 0;
   line-height: 1.6;
   color: var(--color-text-muted);
+  overflow-wrap: anywhere;
 }
 
 blockquote {
@@ -184,4 +191,5 @@ blockquote {
   margin: 0;
   color: var(--color-text-muted);
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }

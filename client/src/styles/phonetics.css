@@ -24,11 +24,17 @@
   padding: 14px;
 }
 
+.say-it-copy {
+  min-width: 0;
+  flex: 1;
+}
+
 .readable-pronunciation {
   margin: 6px 0 0;
   font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.4rem);
   font-weight: 700;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .phonetic-grid {
@@ -56,6 +62,7 @@
   margin: 6px 0 0;
   color: var(--color-text-muted);
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .audio-description,
@@ -63,6 +70,7 @@
   margin: 12px 0 0;
   color: var(--color-text-muted);
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .sound-details {
@@ -101,6 +109,7 @@
   margin: 10px 0 0;
   color: var(--color-text-muted);
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .ipa-help .ipa-line {
@@ -116,12 +125,34 @@
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   min-width: 620px;
+}
+
+.breakdown-mobile-list {
+  display: none;
+  gap: 10px;
+}
+
+.breakdown-mobile-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  padding: 12px;
+}
+
+.breakdown-mobile-row + .breakdown-mobile-row {
+  margin-top: 10px;
+}
+
+.breakdown-mobile-row p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
 }
 
 th,

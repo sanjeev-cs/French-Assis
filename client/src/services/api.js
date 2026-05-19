@@ -86,6 +86,13 @@ export const logoutUser = async () => {
   });
 };
 
+export const changePassword = async ({ currentPassword, nextPassword }) => {
+  return request('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, nextPassword })
+  });
+};
+
 export const fetchCurrentUser = async () => {
   return request('/api/auth/me');
 };

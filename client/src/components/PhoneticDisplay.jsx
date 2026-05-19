@@ -11,7 +11,7 @@ const PhoneticDisplay = ({ phonetics, frenchText }) => {
       </div>
 
       <div className="say-it-panel">
-        <div>
+        <div className="say-it-copy">
           <span className="label">Read this out loud</span>
           <p className="readable-pronunciation">{phonetics.pronunciation_guide || 'Guide unavailable'}</p>
         </div>

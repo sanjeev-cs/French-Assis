@@ -84,6 +84,25 @@ export const loginUser = async ({ username, password }) => {
   };
 };
 
+export const changeUserPassword = async ({ userId, currentPassword, nextPassword }) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new HttpError('Authentication required.', 401);
+  }
+
+  const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+
+  if (!isValidPassword) {
+    throw new HttpError('Current password is incorrect.', 400);
+  }
+
+  user.passwordHash = await bcrypt.hash(nextPassword, 12);
+  await user.save();
+
+  return publicUser(user);
+};
+
 export const findUserById = async (id) => {
   const user = await User.findById(id).select('_id username');
   return user ? publicUser(user) : null;
