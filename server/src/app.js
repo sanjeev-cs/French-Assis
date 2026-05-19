@@ -25,6 +25,13 @@ app.use(express.json({ limit: '16kb' }));
 app.use(cookieParser());
 app.use(apiRateLimiter);
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'FrenchEase API is running'
+  });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });

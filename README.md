@@ -51,7 +51,7 @@ CLIENT_ORIGIN=http://localhost:5173
 4. Create `client/.env` from `client/.env.example`:
 
 ```text
-VITE_API_URL=http://localhost:5000
+BACKEND_API_URL=http://localhost:5000
 ```
 
 5. Start the backend:
@@ -83,7 +83,7 @@ Server:
 
 Client:
 
-- `VITE_API_URL`: Base URL for the Express API.
+- `BACKEND_API_URL`: Base URL for the Express API.
 
 ## API Routes
 
@@ -110,7 +110,7 @@ Deployment steps:
 2. In Render, create a Blueprint from `render.yaml`.
 3. Set `MONGODB_URI`, `GROQ_API_KEY`, and `JWT_SECRET` on the API service.
 4. Set `CLIENT_ORIGIN` on the API service to the deployed frontend URL.
-5. Set `VITE_API_URL` on the static site to the deployed API URL.
+5. Set `BACKEND_API_URL` on the static site to the deployed API URL.
 6. Deploy both services.
 
 ## API Credits
