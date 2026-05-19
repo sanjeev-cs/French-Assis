@@ -1,0 +1,187 @@
+.result-stack {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 32px;
+}
+
+.card,
+.history-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.card {
+  padding: clamp(16px, 2.2vw, 22px);
+}
+
+.result-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--color-accent);
+}
+
+.result-header,
+.example-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.translation-path {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.language-chip {
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  padding: 4px 10px;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.translated-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.translated-line h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.pronunciation-pill,
+.difficulty-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  padding: 6px 12px;
+  color: var(--color-text);
+  font-size: clamp(0.84rem, 0.8rem + 0.2vw, 0.92rem);
+  font-weight: 600;
+}
+
+.compact-pill {
+  margin-top: 10px;
+  font-size: 0.84rem;
+}
+
+.action-row,
+.history-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.secondary-button,
+.ghost-danger {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.compact-button {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+.secondary-button:hover {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-soft);
+}
+
+.ghost-danger {
+  color: var(--color-danger);
+}
+
+.ghost-danger:hover {
+  border-color: rgba(229, 72, 77, 0.25);
+  background: rgba(229, 72, 77, 0.06);
+}
+
+.collapse-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  font-weight: 700;
+  color: inherit;
+}
+
+.tip-content {
+  display: grid;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.tip-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.tip-summary p,
+.mistake-note {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+blockquote {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  border-left: 2px solid var(--color-accent);
+  padding-left: 16px;
+}
+
+.example-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  padding: 14px;
+}
+
+.example-french {
+  margin: 12px 0 4px;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 0.95rem + 0.7vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.example-english {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}

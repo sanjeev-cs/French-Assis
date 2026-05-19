@@ -1,0 +1,57 @@
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100% - 20px, 860px);
+  }
+
+  .hero,
+  .page-heading {
+    padding-top: 14px;
+  }
+
+  .hero h1,
+  .page-heading h1 {
+    font-size: clamp(1.6rem, 10vw, 2.2rem);
+  }
+
+  .search-row,
+  .say-it-panel {
+    flex-direction: column;
+  }
+
+  .search-row button {
+    min-height: 48px;
+  }
+
+  .history-card {
+    flex-direction: column;
+  }
+
+  .site-header {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .site-header nav {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .chat-assistant {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .chat-panel {
+    width: calc(100vw - 24px);
+  }
+
+  .chat-input-row {
+    grid-template-columns: 1fr;
+  }
+}

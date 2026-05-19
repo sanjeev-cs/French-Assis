@@ -1,0 +1,143 @@
+.section-title {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+
+.compact-section-title {
+  margin-bottom: 12px;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.say-it-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  padding: 14px;
+}
+
+.readable-pronunciation {
+  margin: 6px 0 0;
+  font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.phonetic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.label {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pronunciation-explanation {
+  margin-top: 12px;
+  border-left: 2px solid var(--color-accent);
+  padding-left: 14px;
+}
+
+.pronunciation-explanation p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.audio-description,
+.sound-details p {
+  margin: 12px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.sound-details {
+  margin-top: 12px;
+}
+
+.sound-details summary {
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ipa-details {
+  margin-top: 12px;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(79, 108, 247, 0.35);
+  text-underline-offset: 4px;
+  transition: color var(--transition-fast);
+}
+
+.text-button:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+.ipa-help {
+  margin: 10px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.ipa-help .ipa-line {
+  display: block;
+  margin-top: 8px;
+}
+
+.ipa-line,
+.mono {
+  color: var(--color-text-muted);
+  font-family: 'Courier New', monospace;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+tbody tr:nth-child(odd) {
+  background: var(--color-surface-raised);
+}
