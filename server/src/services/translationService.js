@@ -1,8 +1,9 @@
 import { HttpError } from '../utils/httpError.js';
+import { selectProviderTranslation } from '../utils/providerTranslationSelection.js';
 
 const MYMEMORY_URL = 'https://api.mymemory.translated.net/get';
 
-export const translateText = async ({ text, sourceLang, targetLang }) => {
+export const translateText = async ({ text, sourceLang, targetLang, textType = 'sentence' }) => {
   const url = new URL(MYMEMORY_URL);
   url.searchParams.set('q', text);
   url.searchParams.set('langpair', `${sourceLang}|${targetLang}`);
@@ -15,8 +16,15 @@ export const translateText = async ({ text, sourceLang, targetLang }) => {
       throw new Error(data.responseDetails || 'MyMemory returned an invalid response');
     }
 
+    const translatedText = selectProviderTranslation({
+      inputText: text,
+      textType,
+      responseDataText: data.responseData.translatedText,
+      matches: Array.isArray(data.matches) ? data.matches : []
+    });
+
     return {
-      translatedText: data.responseData.translatedText,
+      translatedText,
       sourceLang,
       targetLang
     };

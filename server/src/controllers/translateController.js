@@ -8,7 +8,7 @@ import {
   refineEnglishTranslation,
   refineFrenchTranslation
 } from '../services/groqTranslationService.js';
-import { getTranslationOverride } from '../services/translationOverrideService.js';
+import { canonicalizeFrenchWord } from '../utils/frenchWordCanonicalization.js';
 import { keepRelatedWord } from '../utils/translationGuards.js';
 
 export const translateText = async (req, res, next) => {
@@ -28,30 +28,12 @@ export const translateText = async (req, res, next) => {
     const sourceText = analysis.normalized_text || text;
     const sourceLang = analysis.source_language;
     const targetLang = analysis.target_language;
-    const override = getTranslationOverride({
+    const baseTranslation = await translateWithProvider({
       text: sourceText,
       sourceLang,
       targetLang,
-      preferredFrenchVariant,
       textType: analysis.text_type
     });
-
-    if (override) {
-      const history = await createHistoryEntry({
-        userId: req.user.id,
-        inputText: sourceText,
-        inputLanguage: sourceLang,
-        translatedText: override.translatedText
-      });
-
-      res.status(200).json({
-        ...override,
-        historyId: history._id
-      });
-      return;
-    }
-
-    const baseTranslation = await translateWithProvider({ text: sourceText, sourceLang, targetLang });
     const baseTranslatedText = baseTranslation.translatedText.trim();
 
     let translatedText = baseTranslatedText;
@@ -102,7 +84,27 @@ export const translateText = async (req, res, next) => {
       };
 
       if (analysis.text_type === 'word') {
-        translatedText = baseTranslatedText;
+        const canonicalEuropeanFrench = canonicalizeFrenchWord({
+          translation: safeEuropeanFrench,
+          masculineForm: safeMasculine,
+          feminineForm: safeFeminine,
+          genderApplicable: Boolean(details.gender_applicable && safeFeminine)
+        });
+        const canonicalCanadianFrench = canonicalizeFrenchWord({
+          translation: safeCanadianFrench,
+          masculineForm: safeMasculine,
+          feminineForm: safeFeminine,
+          genderApplicable: Boolean(details.gender_applicable && safeFeminine)
+        });
+
+        variantTranslations = {
+          europeanFrench: canonicalEuropeanFrench,
+          canadianFrench: canonicalCanadianFrench
+        };
+        translatedText =
+          preferredFrenchVariant === 'canadian'
+            ? canonicalCanadianFrench
+            : canonicalEuropeanFrench;
       } else {
         translatedText =
           preferredFrenchVariant === 'canadian'

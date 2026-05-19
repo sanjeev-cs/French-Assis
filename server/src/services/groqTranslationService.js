@@ -4,6 +4,16 @@ import { callGroqJson, logGroqFallback, parseJsonSafely } from './groqClient.js'
 
 const isValidLanguage = (value) => value === 'en' || value === 'fr';
 
+const resolveTextType = (text) => {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+
+  if (words <= 1) {
+    return 'word';
+  }
+
+  return /[.!?]/.test(text) ? 'sentence' : 'phrase';
+};
+
 const analyzeFallback = (text) => {
   const { sourceLang, targetLang } = getTranslationDirection(text);
 
@@ -11,7 +21,7 @@ const analyzeFallback = (text) => {
     source_language: sourceLang,
     target_language: targetLang,
     normalized_text: text.trim(),
-    text_type: text.trim().split(/\s+/).length > 1 ? 'sentence' : 'word'
+    text_type: resolveTextType(text)
   };
 };
 
@@ -58,7 +68,10 @@ Return ONLY valid JSON:
     return {
       source_language: parsed.source_language,
       target_language: parsed.target_language,
-      normalized_text: typeof parsed.normalized_text === 'string' && parsed.normalized_text.trim() ? parsed.normalized_text.trim() : fallback.normalized_text,
+      normalized_text:
+        typeof parsed.normalized_text === 'string' && parsed.normalized_text.trim()
+          ? parsed.normalized_text.trim()
+          : fallback.normalized_text,
       text_type: ['word', 'phrase', 'sentence'].includes(parsed.text_type) ? parsed.text_type : fallback.text_type
     };
   } catch (error) {
@@ -91,7 +104,7 @@ export const refineFrenchTranslation = async ({ sourceText, baseTranslation, pre
 
   try {
     const content = await callGroqJson({
-      temperature: 0.1,
+      temperature: 0,
       messages: [
         {
           role: 'system',
@@ -100,10 +113,12 @@ export const refineFrenchTranslation = async ({ sourceText, baseTranslation, pre
 Your job:
 - Improve or validate a base English-to-French translation.
 - Treat base_translation as the semantic anchor. Do not change it to a different concept.
-- Never replace the meaning with a different language, nationality, or adjective. Example: if source_text is "English", the output must stay in the "anglais/anglaise" family, never "français/française".
+- Never replace the meaning with a different language, nationality, demonym, or adjective family.
+- Example: if source_text is "English", stay in the "anglais/anglaise" family, never the "francais/francaise" family.
 - Produce both standard European French and standard Canadian French when relevant.
 - Choose the preferred_translation according to the requested preferred_variant.
 - If the translation is a single noun, adjective, demonym, or another gendered lexical item, provide both masculine_form and feminine_form when they are genuinely useful.
+- For single gendered lexical items, preferred_translation, european_french, and canadian_french must use the default dictionary form, usually masculine singular. Put the feminine form only in feminine_form.
 - If gender does not apply, set gender_applicable to false and leave masculine_form and feminine_form empty.
 - Keep translations natural, standard, and learner-safe.
 - Do not invent slang unless the source clearly needs it.
@@ -143,7 +158,10 @@ Return ONLY valid JSON:
       ...fallback,
       ...parsed,
       preferred_variant: variant,
-      preferred_translation: parsed.preferred_translation || (variant === FRENCH_VARIANTS.canadian ? parsed.canadian_french : parsed.european_french) || fallback.preferred_translation,
+      preferred_translation:
+        parsed.preferred_translation ||
+        (variant === FRENCH_VARIANTS.canadian ? parsed.canadian_french : parsed.european_french) ||
+        fallback.preferred_translation,
       european_french: parsed.european_french || fallback.european_french,
       canadian_french: parsed.canadian_french || fallback.canadian_french,
       masculine_form: parsed.masculine_form || '',
@@ -172,7 +190,7 @@ export const refineEnglishTranslation = async ({ sourceText, baseTranslation, te
 
   try {
     const content = await callGroqJson({
-      temperature: 0.1,
+      temperature: 0,
       messages: [
         {
           role: 'system',
@@ -218,7 +236,9 @@ Return ONLY valid JSON:
       masculine_form: parsed.masculine_form || '',
       feminine_form: parsed.feminine_form || '',
       gender_applicable: Boolean(parsed.gender_applicable && (parsed.masculine_form || parsed.feminine_form)),
-      source_french_variant: ['shared', 'european', 'canadian'].includes(parsed.source_french_variant) ? parsed.source_french_variant : fallback.source_french_variant
+      source_french_variant: ['shared', 'european', 'canadian'].includes(parsed.source_french_variant)
+        ? parsed.source_french_variant
+        : fallback.source_french_variant
     };
   } catch (error) {
     logGroqFallback('English translation refinement', error);
