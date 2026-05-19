@@ -4,6 +4,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
 }
 
 .site-header {
@@ -13,10 +14,10 @@
   padding: 20px 0 16px;
 }
 
-.site-header nav {
+.site-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .brand-button {
@@ -46,94 +47,14 @@
   background: linear-gradient(90deg, #002395 0 33%, #c8c8c8 33% 66%, #ed2939 66% 100%);
 }
 
-/* Navigation buttons */
-.nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--color-text-muted);
-  padding: 7px 14px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: all var(--transition-fast);
-}
-
-.nav-btn:hover {
-  border-color: var(--color-accent-border);
-  color: var(--color-text);
-}
-
-.nav-btn.active {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-}
-
-.nav-btn svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.nav-btn svg path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.nav-btn--danger:hover {
-  border-color: rgba(229, 72, 77, 0.25);
-  color: var(--color-danger);
-}
-
-.user-pill {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  padding: 6px 12px;
-  color: var(--color-accent);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-muted);
-  padding: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  transition: color var(--transition-fast);
-}
-
-.back-btn:hover {
-  color: var(--color-accent);
-}
-
-.back-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.back-btn svg path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 main {
   flex: 1;
+  min-width: 0;
+}
+
+.top-toolbar {
+  display: flex;
+  justify-content: center;
 }
 
 .hero,

@@ -1,4 +1,5 @@
 import {
+  changeUserPassword,
   clearAuthCookie,
   findUserById,
   getAuthCookieName,
@@ -7,7 +8,7 @@ import {
   setAuthCookie,
   verifyToken
 } from '../services/authService.js';
-import { validateCredentials } from '../validators/authValidator.js';
+import { validateCredentials, validatePasswordChange } from '../validators/authValidator.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -55,5 +56,19 @@ export const me = async (req, res, next) => {
   } catch {
     clearAuthCookie(res);
     res.status(200).json({ user: null });
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const passwordChange = validatePasswordChange(req.body);
+    await changeUserPassword({
+      userId: req.user.id,
+      ...passwordChange
+    });
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    next(error);
   }
 };

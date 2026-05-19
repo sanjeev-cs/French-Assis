@@ -9,6 +9,11 @@ body {
   font-size: clamp(0.9rem, 0.82rem + 0.28vw, 1rem);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  overflow-x: clip;
 }
 
 button,

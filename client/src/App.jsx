@@ -1,30 +1,14 @@
 import { useEffect, useState } from 'react';
+import AccountMenu from './components/AccountMenu.jsx';
 import AuthForm from './components/AuthForm.jsx';
 import ChatAssistant from './components/ChatAssistant.jsx';
+import ChangePasswordModal from './components/ChangePasswordModal.jsx';
 import Loader from './components/Loader.jsx';
 import LogoutModal from './components/LogoutModal.jsx';
+import ViewSwitcher from './components/ViewSwitcher.jsx';
 import Home from './pages/Home.jsx';
 import History from './pages/History.jsx';
 import { fetchCurrentUser, logoutUser, onUnauthorized } from './services/api.js';
-
-const SearchIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M21 21l-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" />
-  </svg>
-);
-
-const HistoryIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 8v4l3 3M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-    <path d="M3 3v5h5" />
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-  </svg>
-);
 
 const App = () => {
   const [view, setView] = useState('home');
@@ -32,6 +16,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -98,36 +83,21 @@ const App = () => {
         <button className="brand-button" type="button" onClick={() => setView('home')}>
           <span className="brand-name">FrenchEase</span>
         </button>
-        <nav>
-          <span className="user-pill">{user.username}</span>
-          <button
-            className={`nav-btn ${view === 'home' ? 'active' : ''}`}
-            type="button"
-            onClick={() => setView('home')}
-          >
-            <SearchIcon />
-            Search
-          </button>
-          <button
-            className={`nav-btn ${view === 'history' ? 'active' : ''}`}
-            type="button"
-            onClick={() => setView('history')}
-          >
-            <HistoryIcon />
-            History
-          </button>
-          <button
-            className="nav-btn nav-btn--danger"
-            type="button"
-            onClick={() => setShowLogoutModal(true)}
-          >
-            <LogoutIcon />
-          </button>
-        </nav>
+        <div className="site-header-actions">
+          <AccountMenu
+            username={user.username}
+            onChangePassword={() => setShowChangePasswordModal(true)}
+            onLogout={() => setShowLogoutModal(true)}
+          />
+        </div>
       </header>
 
+      <div className="top-toolbar">
+        <ViewSwitcher view={view} onChange={setView} />
+      </div>
+
       <main>
-        {view === 'home' ? <Home replaySearch={replaySearch} /> : <History onSearchAgain={handleSearchAgain} onBack={() => setView('home')} />}
+        {view === 'home' ? <Home replaySearch={replaySearch} /> : <History onSearchAgain={handleSearchAgain} />}
       </main>
 
       <footer className="site-footer">
@@ -138,6 +108,10 @@ const App = () => {
 
       {showLogoutModal ? (
         <LogoutModal onConfirm={handleLogout} onCancel={() => setShowLogoutModal(false)} />
+      ) : null}
+
+      {showChangePasswordModal ? (
+        <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       ) : null}
     </div>
   );
