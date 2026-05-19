@@ -20,8 +20,8 @@ const Home = ({ replaySearch }) => {
   return (
     <section className="home-page fade-in">
       <div className="hero">
-        <h1>French Assistant</h1>
-        <p className="hero-copy">Type English or French. FrenchEase detects the language and gives pronunciation for the French text.</p>
+        <h1>Translate & Pronounce</h1>
+        <p className="hero-copy">Type English or French — get translations and pronunciation instantly.</p>
       </div>
 
       <SearchBar onSearch={lookup} disabled={isLoading} initialValue={replaySearch?.text || ''} />

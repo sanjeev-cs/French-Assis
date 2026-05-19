@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: clamp(0.9rem, 0.82rem + 0.28vw, 1rem);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+a {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: rgba(108, 140, 255, 0.25);
+}
+
+::placeholder {
+  color: var(--color-text-muted);
+}

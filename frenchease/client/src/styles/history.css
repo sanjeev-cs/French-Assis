@@ -1,0 +1,27 @@
+.history-panel {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 48px;
+}
+
+.history-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.history-text {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.history-text strong {
+  color: var(--color-accent);
+}
+
+time,
+.empty-state {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
