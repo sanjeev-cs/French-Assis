@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchAiTip, fetchPhonetics, translateText } from '../services/api.js';
+import { buildGenderPronunciationMap, phoneticsUnavailable } from '../utils/phoneticsResult.js';
 
 const emptyResult = {
   inputText: '',
@@ -20,22 +21,16 @@ const aiTipUnavailable = {
   difficulty: 'beginner'
 };
 
-const phoneticsUnavailable = {
-  phonetic_transcription: '',
-  pronunciation_guide: 'Pronunciation guide unavailable',
-  word_breakdown: [],
-  pronunciation_explanation: 'Pronunciation explanation unavailable',
-  audio_description: ''
-};
-
 export const useTranslate = () => {
   const [result, setResult] = useState(emptyResult);
   const [isLoading, setIsLoading] = useState(false);
   const [stageMessage, setStageMessage] = useState('');
   const [error, setError] = useState('');
 
-  const lookup = async (rawText) => {
-    const text = rawText.trim();
+  const lookup = async (rawInput) => {
+    const input = typeof rawInput === 'string' ? { text: rawInput, frenchVariant: 'canadian' } : rawInput;
+    const text = input.text.trim();
+    const frenchVariant = input.frenchVariant || 'canadian';
 
     if (!text) {
       return;
@@ -47,7 +42,7 @@ export const useTranslate = () => {
     setResult({ ...emptyResult, inputText: text });
 
     try {
-      const translation = await translateText(text);
+      const translation = await translateText({ text, frenchVariant });
 
       setResult({
         inputText: text,
@@ -61,19 +56,33 @@ export const useTranslate = () => {
       const [phonetics, aiTip] = await Promise.all([
         fetchPhonetics({
           frenchText: translation.frenchText,
-          historyId: translation.historyId
+          historyId: translation.historyId,
+          variant: translation.frenchVariant
         }).catch(() => phoneticsUnavailable),
         fetchAiTip({
           word: translation.englishText,
           translation: translation.frenchText,
-          historyId: translation.historyId
+          historyId: translation.historyId,
+          frenchVariant: translation.frenchVariant
         }).catch(() => aiTipUnavailable)
       ]);
+
+      const genderPronunciations = await buildGenderPronunciationMap({
+        fetchPhonetics,
+        genderForms: translation.genderForms,
+        historyId: translation.historyId,
+        variant: translation.frenchVariant,
+        baseFrenchText: translation.frenchText,
+        basePhonetics: phonetics
+      });
 
       setStageMessage('Preparing AI tip...');
       setResult({
         inputText: text,
-        translation,
+        translation: {
+          ...translation,
+          genderPronunciations
+        },
         phonetics,
         aiTip
       });

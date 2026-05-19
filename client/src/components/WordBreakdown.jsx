@@ -2,7 +2,7 @@ const WordBreakdown = ({ englishText, frenchText, words }) => {
   const englishWords = englishText.trim().split(/\s+/);
   const frenchWords = frenchText.trim().split(/\s+/);
   const rows = words.map((item, index) => ({
-    englishWord: englishWords[index] || 'Phrase',
+    englishWord: item.translation || englishWords[index] || 'Phrase',
     frenchWord: item.word || frenchWords[index] || '',
     ipa: item.phonetic || '',
     soundsLike: item.english_hint || item.translation || ''

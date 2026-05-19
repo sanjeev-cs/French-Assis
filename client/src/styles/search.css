@@ -54,3 +54,44 @@
   font-size: 0.78rem;
   opacity: 0.6;
 }
+
+.variant-selector {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.variant-selector--compact {
+  margin-top: 12px;
+}
+
+.variant-selector-label {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.variant-selector-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variant-option {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  padding: 8px 12px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.variant-option.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}

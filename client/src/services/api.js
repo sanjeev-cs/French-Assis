@@ -28,24 +28,24 @@ const request = async (path, options = {}) => {
   return data;
 };
 
-export const translateText = async (text) => {
+export const translateText = async ({ text, frenchVariant }) => {
   return request('/api/translate', {
     method: 'POST',
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, frenchVariant })
   });
 };
 
-export const fetchPhonetics = async ({ frenchText, historyId }) => {
+export const fetchPhonetics = async ({ frenchText, historyId, variant }) => {
   return request('/api/phonetics', {
     method: 'POST',
-    body: JSON.stringify({ frenchText, historyId })
+    body: JSON.stringify({ frenchText, historyId, variant })
   });
 };
 
-export const fetchAiTip = async ({ word, translation, historyId }) => {
+export const fetchAiTip = async ({ word, translation, historyId, frenchVariant }) => {
   return request('/api/ai-tip', {
     method: 'POST',
-    body: JSON.stringify({ word, translation, historyId })
+    body: JSON.stringify({ word, translation, historyId, frenchVariant })
   });
 };
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AiTipCard from '../components/AiTipCard.jsx';
 import Loader from '../components/Loader.jsx';
 import PhoneticDisplay from '../components/PhoneticDisplay.jsx';
@@ -9,11 +9,12 @@ import { useTranslate } from '../hooks/useTranslate.js';
 
 const Home = ({ replaySearch }) => {
   const { result, isLoading, stageMessage, error, lookup } = useTranslate();
+  const [frenchVariant, setFrenchVariant] = useState('canadian');
   const isMultiWord = result.inputText.trim().split(/\s+/).length > 1;
 
   useEffect(() => {
     if (replaySearch?.text) {
-      lookup(replaySearch.text);
+      lookup({ text: replaySearch.text, frenchVariant });
     }
   }, [replaySearch?.key]);
 
@@ -24,7 +25,13 @@ const Home = ({ replaySearch }) => {
         <p className="hero-copy">Type English or French to get translations and pronunciation.</p>
       </div>
 
-      <SearchBar onSearch={lookup} disabled={isLoading} initialValue={replaySearch?.text || ''} />
+      <SearchBar
+        onSearch={lookup}
+        disabled={isLoading}
+        initialValue={replaySearch?.text || ''}
+        frenchVariant={frenchVariant}
+        onVariantChange={setFrenchVariant}
+      />
 
       {error ? <p className="error-banner">{error}</p> : null}
       {isLoading ? <Loader message={stageMessage} /> : null}

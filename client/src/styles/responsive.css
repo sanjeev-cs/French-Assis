@@ -75,6 +75,11 @@
     margin: 6px 4px 0;
   }
 
+  .variant-selector-options {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .history-card {
     flex-direction: column;
   }
@@ -105,6 +110,10 @@
   .translated-line h2 {
     font-size: clamp(1.2rem, 7vw, 1.6rem);
     line-height: 1.15;
+  }
+
+  .translation-meta-grid {
+    grid-template-columns: 1fr;
   }
 
   .say-it-panel {
