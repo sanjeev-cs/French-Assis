@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import AiTipCard from '../components/AiTipCard.jsx';
 import Loader from '../components/Loader.jsx';
 import PhoneticDisplay from '../components/PhoneticDisplay.jsx';
@@ -9,12 +9,11 @@ import { useTranslate } from '../hooks/useTranslate.js';
 
 const Home = ({ replaySearch }) => {
   const { result, isLoading, stageMessage, error, lookup } = useTranslate();
-  const [frenchVariant, setFrenchVariant] = useState('canadian');
   const isMultiWord = result.inputText.trim().split(/\s+/).length > 1;
 
   useEffect(() => {
     if (replaySearch?.text) {
-      lookup({ text: replaySearch.text, frenchVariant });
+      lookup({ text: replaySearch.text });
     }
   }, [replaySearch?.key]);
 
@@ -29,8 +28,6 @@ const Home = ({ replaySearch }) => {
         onSearch={lookup}
         disabled={isLoading}
         initialValue={replaySearch?.text || ''}
-        frenchVariant={frenchVariant}
-        onVariantChange={setFrenchVariant}
       />
 
       {error ? <p className="error-banner">{error}</p> : null}

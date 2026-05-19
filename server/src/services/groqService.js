@@ -1,7 +1,6 @@
-import { getFrenchVariantLabel, normalizeFrenchVariant } from '../constants/frenchVariants.js';
 import { callGroqJson, callGroqText, logGroqFallback, parseJsonSafely } from './groqClient.js';
 
-const getPhoneticsPrompt = (variantLabel) => `You are a ${variantLabel} phonetics expert for English-speaking beginners. Given French text, silently verify the pronunciation before returning JSON.
+const getPhoneticsPrompt = () => `You are a Canadian French phonetics expert for English-speaking beginners. Given French text, silently verify the pronunciation before returning JSON.
 
 Rules for the simplified pronunciation guide:
 - Use syllable-by-syllable English approximations separated by hyphens.
@@ -14,7 +13,7 @@ Rules for the simplified pronunciation guide:
   - un sounds like "uhn"
 - Mark silent endings in pronunciation_explanation, not pronunciation_guide.
 - For phrases, preserve natural rhythm and do not over-pronounce final silent consonants.
-- If there are regional variants, follow ${variantLabel} first and mention standard alternatives briefly in pronunciation_explanation when useful.
+- If there are regional variants, follow Canadian French first and mention standard alternatives briefly in pronunciation_explanation when useful.
 - In word_breakdown, translation must be the English meaning of the French word when reasonably possible.
 
 Examples:
@@ -31,9 +30,7 @@ Return ONLY valid JSON in this exact format (no markdown, no explanation outside
   "audio_description": "Brief description of how each sound is formed"
 }`;
 
-export const getPhonetics = async (frenchText, variant = 'european') => {
-  const normalizedVariant = normalizeFrenchVariant(variant);
-  const variantLabel = getFrenchVariantLabel(normalizedVariant);
+export const getPhonetics = async (frenchText) => {
   const fallback = {
     phonetic_transcription: '',
     pronunciation_guide: 'Pronunciation guide unavailable',
@@ -45,7 +42,7 @@ export const getPhonetics = async (frenchText, variant = 'european') => {
   try {
     const content = await callGroqJson({
       messages: [
-        { role: 'system', content: getPhoneticsPrompt(variantLabel) },
+        { role: 'system', content: getPhoneticsPrompt() },
         { role: 'user', content: frenchText }
       ]
     });
@@ -57,7 +54,7 @@ export const getPhonetics = async (frenchText, variant = 'european') => {
   }
 };
 
-export const getAiTip = async (word, translation, frenchVariant = 'european') => {
+export const getAiTip = async (word, translation) => {
   const fallback = {
     memory_tip: 'AI tip unavailable.',
     example_sentence: {
@@ -70,8 +67,7 @@ export const getAiTip = async (word, translation, frenchVariant = 'european') =>
     difficulty: 'beginner'
   };
 
-  const variantLabel = getFrenchVariantLabel(normalizeFrenchVariant(frenchVariant));
-  const prompt = `You are a French language coach. For the English word or phrase '${word}' which translates to '${translation}' in ${variantLabel}, provide a short memory tip, one natural usage example in ${variantLabel}, pronunciation for the French example sentence, and one common mistake to avoid. Make the French example correct and natural for learners. Return ONLY valid JSON:
+  const prompt = `You are a French language coach. For the English word or phrase '${word}' which translates to '${translation}' in Canadian French, provide a short memory tip, one natural usage example in Canadian French, pronunciation for the French example sentence, and one common mistake to avoid. Make the French example correct and natural for learners. Return ONLY valid JSON:
 {
   "memory_tip": "...",
   "example_sentence": {
@@ -108,7 +104,7 @@ export const getChatResponse = async ({ message, history = [] }) => {
         {
           role: 'system',
           content:
-            'You are FrenchEase Assistant, a concise French language tutor. Help with French translation, pronunciation, grammar, vocabulary, usage, memorization, and practice. Give clear beginner-friendly answers. Do not use markdown formatting, bold markers, asterisks, or code fences. Use short plain-text lines or simple hyphen lists. For pronunciation, be precise and conservative: say readable guides are approximations, prefer standard European French unless the user asks for Canadian French, avoid inventing sound rules, and mention silent letters, nasal vowels, liaison, or dropped endings only when relevant. Include French examples with English translations when useful. If the question is unrelated to French learning, politely redirect to French learning help.'
+            'You are FrenchEase Assistant, a concise French language tutor. Help with French translation, pronunciation, grammar, vocabulary, usage, memorization, and practice. Give clear beginner-friendly answers. Do not use markdown formatting, bold markers, asterisks, or code fences. Use short plain-text lines or simple hyphen lists. For pronunciation, be precise and conservative: say readable guides are approximations, prefer Canadian French, avoid inventing sound rules, and mention silent letters, nasal vowels, liaison, or dropped endings only when relevant. Include French examples with English translations when useful. If the question is unrelated to French learning, politely redirect to French learning help.'
         },
         ...safeHistory,
         { role: 'user', content: message }

@@ -18,7 +18,6 @@ export const buildGenderPronunciationMap = async ({
   fetchPhonetics,
   genderForms,
   historyId,
-  variant,
   baseFrenchText,
   basePhonetics
 }) => {
@@ -50,8 +49,7 @@ export const buildGenderPronunciationMap = async ({
       if (!phonetics) {
         phonetics = await fetchPhonetics({
           frenchText: text,
-          historyId,
-          variant
+          historyId
         }).catch(() => phoneticsUnavailable);
 
         phoneticsByText.set(normalizedText, phonetics);

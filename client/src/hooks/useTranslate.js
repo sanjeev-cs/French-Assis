@@ -28,9 +28,8 @@ export const useTranslate = () => {
   const [error, setError] = useState('');
 
   const lookup = async (rawInput) => {
-    const input = typeof rawInput === 'string' ? { text: rawInput, frenchVariant: 'canadian' } : rawInput;
+    const input = typeof rawInput === 'string' ? { text: rawInput } : rawInput;
     const text = input.text.trim();
-    const frenchVariant = input.frenchVariant || 'canadian';
 
     if (!text) {
       return;
@@ -42,7 +41,7 @@ export const useTranslate = () => {
     setResult({ ...emptyResult, inputText: text });
 
     try {
-      const translation = await translateText({ text, frenchVariant });
+      const translation = await translateText({ text });
 
       setResult({
         inputText: text,
@@ -56,14 +55,12 @@ export const useTranslate = () => {
       const [phonetics, aiTip] = await Promise.all([
         fetchPhonetics({
           frenchText: translation.frenchText,
-          historyId: translation.historyId,
-          variant: translation.frenchVariant
+          historyId: translation.historyId
         }).catch(() => phoneticsUnavailable),
         fetchAiTip({
           word: translation.englishText,
           translation: translation.frenchText,
-          historyId: translation.historyId,
-          frenchVariant: translation.frenchVariant
+          historyId: translation.historyId
         }).catch(() => aiTipUnavailable)
       ]);
 
@@ -71,7 +68,6 @@ export const useTranslate = () => {
         fetchPhonetics,
         genderForms: translation.genderForms,
         historyId: translation.historyId,
-        variant: translation.frenchVariant,
         baseFrenchText: translation.frenchText,
         basePhonetics: phonetics
       });

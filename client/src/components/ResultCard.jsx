@@ -27,15 +27,8 @@ const ResultCard = ({ result }) => {
   const translatedText = result.translation.translatedText;
   const sourceName = languageNames[result.translation.sourceLang] || result.translation.sourceLang;
   const targetName = languageNames[result.translation.targetLang] || result.translation.targetLang;
-  const variants = result.translation.variantTranslations;
   const genderForms = result.translation.genderForms;
   const genderPronunciations = result.translation.genderPronunciations || {};
-  const selectedVariantLabel = result.translation.frenchVariantLabel || 'French';
-  const selectedVariantText = variants
-    ? result.translation.frenchVariant === 'canadian'
-      ? variants.canadianFrench
-      : variants.europeanFrench
-    : translatedText;
 
   const copyTranslation = async () => {
     if (navigator.clipboard) {
@@ -46,24 +39,20 @@ const ResultCard = ({ result }) => {
   return (
     <article className="card result-card fade-in">
       <div className="result-header">
-        <p className="translation-path">
-          Detected {sourceName} to {targetName}
-        </p>
+        <div className="result-heading-copy">
+          <p className="translation-path">
+            Detected {sourceName} to {targetName}
+          </p>
+          {result.translation.targetLang === 'fr' ? (
+            <p className="translation-variant-badge">Translated in Canadian French</p>
+          ) : null}
+        </div>
         <span className="language-chip">{result.translation.targetLang.toUpperCase()}</span>
       </div>
 
       <div className="translated-line">
         <h2>{translatedText}</h2>
       </div>
-
-      {variants ? (
-        <div className="translation-meta-grid translation-meta-grid--single">
-          <div className="translation-meta-card">
-            <span className="label">{selectedVariantLabel}</span>
-            <p>{selectedVariantText}</p>
-          </div>
-        </div>
-      ) : null}
 
       {genderForms?.applicable ? (
         <div className="translation-meta-grid">
@@ -73,9 +62,6 @@ const ResultCard = ({ result }) => {
       ) : null}
 
       {result.translation.translationNote ? <p className="translation-note">{result.translation.translationNote}</p> : null}
-      {result.translation.sourceLang === 'fr' && result.translation.sourceFrenchVariant !== 'shared' ? (
-        <p className="translation-note">Source variety: {result.translation.sourceFrenchVariant === 'canadian' ? 'Canadian French' : 'European French'}</p>
-      ) : null}
 
       <div className="action-row">
         <button className="secondary-button" type="button" onClick={copyTranslation}>

@@ -1,4 +1,3 @@
-import { FRENCH_VARIANTS, getFrenchVariantLabel, normalizeFrenchVariant } from '../constants/frenchVariants.js';
 import { getTranslationDirection } from '../utils/languageDetection.js';
 import { callGroqJson, logGroqFallback, parseJsonSafely } from './groqClient.js';
 
@@ -80,27 +79,20 @@ Return ONLY valid JSON:
   }
 };
 
-const frenchDetailsFallback = (baseTranslation, variant) => {
-  const normalizedVariant = normalizeFrenchVariant(variant);
-
+const frenchDetailsFallback = (baseTranslation) => {
   return {
     preferred_translation: baseTranslation,
-    european_french: baseTranslation,
-    canadian_french: baseTranslation,
     masculine_form: '',
     feminine_form: '',
     gender_applicable: false,
     part_of_speech: 'phrase',
     note: '',
-    confidence: 'low',
-    preferred_variant: normalizedVariant
+    confidence: 'low'
   };
 };
 
-export const refineFrenchTranslation = async ({ sourceText, baseTranslation, preferredFrenchVariant, textType }) => {
-  const variant = normalizeFrenchVariant(preferredFrenchVariant);
-  const variantLabel = getFrenchVariantLabel(variant);
-  const fallback = frenchDetailsFallback(baseTranslation, variant);
+export const refineFrenchTranslation = async ({ sourceText, baseTranslation, textType }) => {
+  const fallback = frenchDetailsFallback(baseTranslation);
 
   try {
     const content = await callGroqJson({
@@ -115,105 +107,23 @@ Your job:
 - Treat base_translation as the semantic anchor. Do not change it to a different concept.
 - Never replace the meaning with a different language, nationality, demonym, or adjective family.
 - Example: if source_text is "English", stay in the "anglais/anglaise" family, never the "francais/francaise" family.
-- Produce both standard European French and standard Canadian French when relevant.
-- Choose the preferred_translation according to the requested preferred_variant.
+- Produce one natural Canadian French translation.
 - If the translation is a single noun, adjective, demonym, or another gendered lexical item, provide both masculine_form and feminine_form when they are genuinely useful.
-- For single gendered lexical items, preferred_translation, european_french, and canadian_french must use the default dictionary form, usually masculine singular. Put the feminine form only in feminine_form.
+- For single gendered lexical items, preferred_translation must use the default dictionary form, usually masculine singular. Put the feminine form only in feminine_form.
 - If gender does not apply, set gender_applicable to false and leave masculine_form and feminine_form empty.
 - Keep translations natural, standard, and learner-safe.
 - Do not invent slang unless the source clearly needs it.
 - For phrases or sentences, masculine/feminine forms are usually not applicable.
-- If there is no true regional difference, keep european_french and canadian_french the same as base_translation.
 
 Return ONLY valid JSON:
 {
-  "preferred_translation": "French translation that matches the requested preferred_variant",
-  "european_french": "Standard European French version",
-  "canadian_french": "Standard Canadian French version",
+  "preferred_translation": "Natural Canadian French translation",
   "masculine_form": "Masculine French form if applicable, otherwise empty string",
   "feminine_form": "Feminine French form if applicable, otherwise empty string",
   "gender_applicable": true,
   "part_of_speech": "noun|adjective|demonym|verb|phrase|sentence|other",
   "note": "Short learner-facing note about regional variation or gender, otherwise empty string",
-  "confidence": "high|medium|low",
-  "preferred_variant": "european|canadian"
-}`
-        },
-        {
-          role: 'user',
-          content: JSON.stringify({
-            source_text: sourceText,
-            base_translation: baseTranslation,
-            preferred_variant: variant,
-            preferred_variant_label: variantLabel,
-            text_type: textType
-          })
-        }
-      ]
-    });
-
-    const parsed = parseJsonSafely(content, fallback);
-
-    return {
-      ...fallback,
-      ...parsed,
-      preferred_variant: variant,
-      preferred_translation:
-        parsed.preferred_translation ||
-        (variant === FRENCH_VARIANTS.canadian ? parsed.canadian_french : parsed.european_french) ||
-        fallback.preferred_translation,
-      european_french: parsed.european_french || fallback.european_french,
-      canadian_french: parsed.canadian_french || fallback.canadian_french,
-      masculine_form: parsed.masculine_form || '',
-      feminine_form: parsed.feminine_form || '',
-      gender_applicable: Boolean(parsed.gender_applicable && (parsed.masculine_form || parsed.feminine_form))
-    };
-  } catch (error) {
-    logGroqFallback('French translation refinement', error);
-    return fallback;
-  }
-};
-
-const englishDetailsFallback = (baseTranslation) => ({
-  preferred_translation: baseTranslation,
-  masculine_form: '',
-  feminine_form: '',
-  gender_applicable: false,
-  part_of_speech: 'phrase',
-  note: '',
-  confidence: 'low',
-  source_french_variant: 'shared'
-});
-
-export const refineEnglishTranslation = async ({ sourceText, baseTranslation, textType }) => {
-  const fallback = englishDetailsFallback(baseTranslation);
-
-  try {
-    const content = await callGroqJson({
-      temperature: 0,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a precise French-to-English translation editor for a language learning app.
-
-Your job:
-- Improve or validate a base French-to-English translation.
-- Treat base_translation as the semantic anchor. Do not change it to a different concept.
-- If the French source is a single gendered lexical item, provide both masculine_form and feminine_form when applicable.
-- If gender does not apply, set gender_applicable to false and leave masculine_form and feminine_form empty.
-- source_french_variant must be one of: "shared", "european", "canadian".
-- Keep the English translation natural and beginner-friendly.
-
-Return ONLY valid JSON:
-{
-  "preferred_translation": "Natural English translation",
-  "masculine_form": "Masculine French form if applicable, otherwise empty string",
-  "feminine_form": "Feminine French form if applicable, otherwise empty string",
-  "gender_applicable": true,
-  "part_of_speech": "noun|adjective|demonym|verb|phrase|sentence|other",
-  "note": "Short learner-facing note about gender or regional usage, otherwise empty string",
-  "confidence": "high|medium|low",
-  "source_french_variant": "shared|european|canadian"
+  "confidence": "high|medium|low"
 }`
         },
         {
@@ -235,10 +145,73 @@ Return ONLY valid JSON:
       preferred_translation: parsed.preferred_translation || fallback.preferred_translation,
       masculine_form: parsed.masculine_form || '',
       feminine_form: parsed.feminine_form || '',
-      gender_applicable: Boolean(parsed.gender_applicable && (parsed.masculine_form || parsed.feminine_form)),
-      source_french_variant: ['shared', 'european', 'canadian'].includes(parsed.source_french_variant)
-        ? parsed.source_french_variant
-        : fallback.source_french_variant
+      gender_applicable: Boolean(parsed.gender_applicable && (parsed.masculine_form || parsed.feminine_form))
+    };
+  } catch (error) {
+    logGroqFallback('French translation refinement', error);
+    return fallback;
+  }
+};
+
+const englishDetailsFallback = (baseTranslation) => ({
+  preferred_translation: baseTranslation,
+  masculine_form: '',
+  feminine_form: '',
+  gender_applicable: false,
+  part_of_speech: 'phrase',
+  note: '',
+  confidence: 'low'
+});
+
+export const refineEnglishTranslation = async ({ sourceText, baseTranslation, textType }) => {
+  const fallback = englishDetailsFallback(baseTranslation);
+
+  try {
+    const content = await callGroqJson({
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a precise French-to-English translation editor for a language learning app.
+
+Your job:
+- Improve or validate a base French-to-English translation.
+- Treat base_translation as the semantic anchor. Do not change it to a different concept.
+- If the French source is a single gendered lexical item, provide both masculine_form and feminine_form when applicable.
+- If gender does not apply, set gender_applicable to false and leave masculine_form and feminine_form empty.
+- Keep the English translation natural and beginner-friendly.
+
+Return ONLY valid JSON:
+{
+  "preferred_translation": "Natural English translation",
+  "masculine_form": "Masculine French form if applicable, otherwise empty string",
+  "feminine_form": "Feminine French form if applicable, otherwise empty string",
+  "gender_applicable": true,
+  "part_of_speech": "noun|adjective|demonym|verb|phrase|sentence|other",
+  "note": "Short learner-facing note about gender or regional usage, otherwise empty string",
+  "confidence": "high|medium|low"
+}`
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            source_text: sourceText,
+            base_translation: baseTranslation,
+            text_type: textType
+          })
+        }
+      ]
+    });
+
+    const parsed = parseJsonSafely(content, fallback);
+
+    return {
+      ...fallback,
+      ...parsed,
+      preferred_translation: parsed.preferred_translation || fallback.preferred_translation,
+      masculine_form: parsed.masculine_form || '',
+      feminine_form: parsed.feminine_form || '',
+      gender_applicable: Boolean(parsed.gender_applicable && (parsed.masculine_form || parsed.feminine_form))
     };
   } catch (error) {
     logGroqFallback('English translation refinement', error);

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import { FRENCH_VARIANT_OPTIONS } from '../constants/frenchVariants.js';
-import FrenchVariantSelector from './FrenchVariantSelector.jsx';
 
 const MAX_LENGTH = 200;
 
-const SearchBar = ({ onSearch, disabled, initialValue = '', frenchVariant = 'canadian', onVariantChange }) => {
+const SearchBar = ({ onSearch, disabled, initialValue = '' }) => {
   const [text, setText] = useState(initialValue);
-  const selectedVariant = FRENCH_VARIANT_OPTIONS.find((option) => option.value === frenchVariant);
 
   useEffect(() => {
     setText(initialValue);
@@ -17,10 +14,7 @@ const SearchBar = ({ onSearch, disabled, initialValue = '', frenchVariant = 'can
       return;
     }
 
-    onSearch({
-      text,
-      frenchVariant
-    });
+    onSearch({ text });
   };
 
   const handleKeyDown = (event) => {
@@ -49,9 +43,6 @@ const SearchBar = ({ onSearch, disabled, initialValue = '', frenchVariant = 'can
           Translate
         </button>
       </div>
-      {selectedVariant ? (
-        <FrenchVariantSelector value={frenchVariant} onChange={onVariantChange} disabled={disabled} compact />
-      ) : null}
       <p className="character-count">
         {text.length}/{MAX_LENGTH}
       </p>

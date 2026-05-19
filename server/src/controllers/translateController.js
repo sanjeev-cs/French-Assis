@@ -2,7 +2,6 @@ import { translateText as translateWithProvider } from '../services/translationS
 import { createHistoryEntry } from '../services/historyService.js';
 import { HttpError } from '../utils/httpError.js';
 import { sanitizeText } from '../utils/sanitizeInput.js';
-import { getFrenchVariantLabel, normalizeFrenchVariant } from '../constants/frenchVariants.js';
 import {
   analyzeTranslationRequest,
   refineEnglishTranslation,
@@ -14,7 +13,6 @@ import { keepRelatedWord } from '../utils/translationGuards.js';
 export const translateText = async (req, res, next) => {
   try {
     const text = sanitizeText(req.body.text);
-    const preferredFrenchVariant = normalizeFrenchVariant(sanitizeText(req.body.frenchVariant));
 
     if (!text) {
       throw new HttpError('Text is required.', 400);
@@ -39,32 +37,20 @@ export const translateText = async (req, res, next) => {
     let translatedText = baseTranslatedText;
     let frenchText = sourceLang === 'fr' ? sourceText : translatedText;
     let englishText = sourceLang === 'en' ? sourceText : translatedText;
-    let variantTranslations = null;
     let genderForms = null;
     let translationNote = '';
-    let sourceFrenchVariant = 'shared';
 
     if (targetLang === 'fr') {
       const details = await refineFrenchTranslation({
         sourceText,
         baseTranslation: baseTranslation.translatedText,
-        preferredFrenchVariant,
         textType: analysis.text_type
       });
 
-      const safeEuropeanFrench =
-        analysis.text_type === 'word'
-          ? keepRelatedWord(baseTranslatedText, details.european_french, baseTranslatedText)
-          : details.european_french || baseTranslatedText;
       const safeCanadianFrench =
         analysis.text_type === 'word'
-          ? keepRelatedWord(baseTranslatedText, details.canadian_french, safeEuropeanFrench || baseTranslatedText)
-          : details.canadian_french || details.european_french || baseTranslatedText;
-
-      variantTranslations = {
-        europeanFrench: safeEuropeanFrench,
-        canadianFrench: safeCanadianFrench
-      };
+          ? keepRelatedWord(baseTranslatedText, details.preferred_translation, baseTranslatedText)
+          : details.preferred_translation || baseTranslatedText;
 
       const safeMasculine =
         analysis.text_type === 'word'
@@ -84,12 +70,6 @@ export const translateText = async (req, res, next) => {
       };
 
       if (analysis.text_type === 'word') {
-        const canonicalEuropeanFrench = canonicalizeFrenchWord({
-          translation: safeEuropeanFrench,
-          masculineForm: safeMasculine,
-          feminineForm: safeFeminine,
-          genderApplicable: Boolean(details.gender_applicable && safeFeminine)
-        });
         const canonicalCanadianFrench = canonicalizeFrenchWord({
           translation: safeCanadianFrench,
           masculineForm: safeMasculine,
@@ -97,19 +77,9 @@ export const translateText = async (req, res, next) => {
           genderApplicable: Boolean(details.gender_applicable && safeFeminine)
         });
 
-        variantTranslations = {
-          europeanFrench: canonicalEuropeanFrench,
-          canadianFrench: canonicalCanadianFrench
-        };
-        translatedText =
-          preferredFrenchVariant === 'canadian'
-            ? canonicalCanadianFrench
-            : canonicalEuropeanFrench;
+        translatedText = canonicalCanadianFrench;
       } else {
-        translatedText =
-          preferredFrenchVariant === 'canadian'
-            ? variantTranslations.canadianFrench
-            : variantTranslations.europeanFrench;
+        translatedText = safeCanadianFrench;
       }
 
       frenchText = translatedText;
@@ -126,7 +96,6 @@ export const translateText = async (req, res, next) => {
       frenchText = sourceText;
       englishText = translatedText;
       translationNote = details.note || '';
-      sourceFrenchVariant = details.source_french_variant || 'shared';
       genderForms = {
         applicable: Boolean(details.gender_applicable),
         masculine: details.masculine_form || '',
@@ -149,12 +118,8 @@ export const translateText = async (req, res, next) => {
       englishText,
       sourceLang,
       targetLang,
-      variantTranslations,
       genderForms,
       translationNote,
-      sourceFrenchVariant,
-      frenchVariant: preferredFrenchVariant,
-      frenchVariantLabel: getFrenchVariantLabel(preferredFrenchVariant),
       historyId: history._id
     });
   } catch (error) {
