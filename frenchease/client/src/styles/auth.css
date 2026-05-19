@@ -10,7 +10,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-md);
   padding: clamp(24px, 3vw, 32px);
 }
 
@@ -30,8 +30,8 @@
 .auth-form label {
   display: grid;
   gap: 6px;
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
+  color: var(--color-text);
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -48,7 +48,7 @@
 
 .auth-form input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  box-shadow: var(--shadow-glow);
 }
 
 .password-field {
@@ -104,14 +104,15 @@
   border-radius: var(--radius-md);
   background: var(--color-accent);
   color: var(--color-white);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: #5a7aef;
+  background: #3d5ce5;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 108, 247, 0.3);
 }
 
 .auth-switch {

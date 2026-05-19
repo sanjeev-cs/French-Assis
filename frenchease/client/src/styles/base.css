@@ -39,9 +39,9 @@ a:hover {
 }
 
 ::selection {
-  background: rgba(108, 140, 255, 0.25);
+  background: rgba(79, 108, 247, 0.15);
 }
 
 ::placeholder {
-  color: var(--color-text-muted);
+  color: #9ca3af;
 }

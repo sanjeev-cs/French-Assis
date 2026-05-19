@@ -88,13 +88,13 @@
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: rgba(108, 140, 255, 0.4);
+  text-decoration-color: rgba(79, 108, 247, 0.35);
   text-underline-offset: 4px;
   transition: color var(--transition-fast);
 }
 
 .text-button:hover {
-  color: #8da8ff;
+  text-decoration-color: var(--color-accent);
 }
 
 .ipa-help {
@@ -139,5 +139,5 @@ th {
 }
 
 tbody tr:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface-raised);
 }

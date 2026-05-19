@@ -43,7 +43,7 @@
   width: 100%;
   height: 2px;
   border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, #002395 0 33%, #ffffff 33% 66%, #ed2939 66% 100%);
+  background: linear-gradient(90deg, #002395 0 33%, #c8c8c8 33% 66%, #ed2939 66% 100%);
 }
 
 /* Navigation buttons */
@@ -87,7 +87,7 @@
 }
 
 .nav-btn--danger:hover {
-  border-color: rgba(255, 107, 107, 0.3);
+  border-color: rgba(229, 72, 77, 0.25);
   color: var(--color-danger);
 }
 
