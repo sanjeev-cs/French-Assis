@@ -37,7 +37,12 @@ const Home = ({ replaySearch }) => {
         <div className="result-stack">
           <ResultCard result={result} />
           {result.phonetics ? (
-            <PhoneticDisplay phonetics={result.phonetics} frenchText={result.translation.frenchText} />
+            <PhoneticDisplay
+              phonetics={result.phonetics}
+              frenchText={result.translation.frenchText}
+              genderForms={result.translation.genderForms}
+              genderPronunciations={result.translation.genderPronunciations}
+            />
           ) : null}
           {isMultiWord && result.phonetics?.word_breakdown?.length ? (
             <WordBreakdown

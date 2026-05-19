@@ -8,6 +8,7 @@ import {
   refineFrenchTranslation
 } from '../services/groqTranslationService.js';
 import { canonicalizeFrenchWord } from '../utils/frenchWordCanonicalization.js';
+import { inferFrenchGenderForms } from '../utils/frenchGenderInference.js';
 import { keepRelatedWord } from '../utils/translationGuards.js';
 
 export const translateText = async (req, res, next) => {
@@ -33,6 +34,7 @@ export const translateText = async (req, res, next) => {
       textType: analysis.text_type
     });
     const baseTranslatedText = baseTranslation.translatedText.trim();
+    const providerCandidates = Array.isArray(baseTranslation.candidates) ? baseTranslation.candidates : [];
 
     let translatedText = baseTranslatedText;
     let frenchText = sourceLang === 'fr' ? sourceText : translatedText;
@@ -60,11 +62,21 @@ export const translateText = async (req, res, next) => {
         analysis.text_type === 'word'
           ? keepRelatedWord(safeMasculine || baseTranslatedText, details.feminine_form, '')
           : details.feminine_form || '';
+      const inferredGenderForms =
+        analysis.text_type === 'word'
+          ? inferFrenchGenderForms({
+              baseWord: baseTranslatedText,
+              candidates: providerCandidates
+            })
+          : { applicable: false, masculine: '', feminine: '' };
+      const resolvedMasculine = safeMasculine || inferredGenderForms.masculine || '';
+      const resolvedFeminine = safeFeminine || inferredGenderForms.feminine || '';
+      const hasGenderForms = Boolean(resolvedMasculine && resolvedFeminine);
 
       genderForms = {
-        applicable: Boolean(details.gender_applicable && safeFeminine),
-        masculine: safeMasculine || '',
-        feminine: safeFeminine || '',
+        applicable: Boolean((details.gender_applicable && resolvedFeminine) || inferredGenderForms.applicable),
+        masculine: resolvedMasculine,
+        feminine: resolvedFeminine,
         partOfSpeech: details.part_of_speech || '',
         note: details.note || ''
       };
@@ -72,9 +84,9 @@ export const translateText = async (req, res, next) => {
       if (analysis.text_type === 'word') {
         const canonicalCanadianFrench = canonicalizeFrenchWord({
           translation: safeCanadianFrench,
-          masculineForm: safeMasculine,
-          feminineForm: safeFeminine,
-          genderApplicable: Boolean(details.gender_applicable && safeFeminine)
+          masculineForm: resolvedMasculine,
+          feminineForm: resolvedFeminine,
+          genderApplicable: hasGenderForms
         });
 
         translatedText = canonicalCanadianFrench;

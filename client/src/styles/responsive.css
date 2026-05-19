@@ -130,6 +130,10 @@
     gap: 12px;
   }
 
+  .form-pronunciation-grid {
+    grid-template-columns: 1fr;
+  }
+
   .breakdown-table {
     display: none;
   }

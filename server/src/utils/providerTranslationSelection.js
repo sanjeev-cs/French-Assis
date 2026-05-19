@@ -35,6 +35,22 @@ const extractCandidateTexts = (value, textType) => {
     .filter(Boolean);
 };
 
+export const collectProviderCandidates = ({ textType, responseDataText, matches = [] }) => {
+  const candidates = [];
+
+  extractCandidateTexts(responseDataText, textType).forEach((candidateText) => {
+    candidates.push(candidateText);
+  });
+
+  matches.forEach((match) => {
+    extractCandidateTexts(match.translation, textType).forEach((candidateText) => {
+      candidates.push(candidateText);
+    });
+  });
+
+  return [...new Set(candidates.map((candidate) => cleanCandidate(candidate)).filter(Boolean))];
+};
+
 const isExactSegmentMatch = (inputText, segment) => normalizeText(inputText) === normalizeText(segment);
 
 const buildCandidateScore = ({ inputText, candidateText, segment, quality, source, textType }) => {

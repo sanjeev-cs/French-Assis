@@ -1,8 +1,26 @@
 import { useState } from 'react';
 import { speakFrench } from '../utils/speech.js';
 
-const PhoneticDisplay = ({ phonetics, frenchText }) => {
+const FormPronunciationCard = ({ label, value, pronunciation }) => {
+  if (!value || !pronunciation?.guide) {
+    return null;
+  }
+
+  return (
+    <div className="form-pronunciation-card">
+      <span className="label">{label}</span>
+      <p className="form-pronunciation-word">{value}</p>
+      <p className="form-pronunciation-guide">{pronunciation.guide}</p>
+      <button className="secondary-button compact-button" type="button" onClick={() => speakFrench(value)}>
+        Listen
+      </button>
+    </div>
+  );
+};
+
+const PhoneticDisplay = ({ phonetics, frenchText, genderForms, genderPronunciations }) => {
   const [showIpa, setShowIpa] = useState(false);
+  const hasGenderPronunciations = Boolean(genderForms?.applicable && (genderPronunciations?.masculine || genderPronunciations?.feminine));
 
   return (
     <section className="card phonetic-card fade-in">
@@ -19,6 +37,21 @@ const PhoneticDisplay = ({ phonetics, frenchText }) => {
           Listen
         </button>
       </div>
+
+      {hasGenderPronunciations ? (
+        <div className="form-pronunciation-grid">
+          <FormPronunciationCard
+            label="Masculine"
+            value={genderForms.masculine}
+            pronunciation={genderPronunciations.masculine}
+          />
+          <FormPronunciationCard
+            label="Feminine"
+            value={genderForms.feminine}
+            pronunciation={genderPronunciations.feminine}
+          />
+        </div>
+      ) : null}
 
       {phonetics.pronunciation_explanation ? (
         <div className="pronunciation-explanation">
