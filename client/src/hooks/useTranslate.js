@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { fetchAiTip, fetchPhonetics, translateText } from '../services/api.js';
+import { buildGenderPronunciationMap, phoneticsUnavailable } from '../utils/phoneticsResult.js';
 
 const emptyResult = {
   inputText: '',
   translation: null,
   phonetics: null,
-  aiTip: null
+  aiTip: null,
+  invalidMessage: ''
 };
 
 const aiTipUnavailable = {
@@ -20,22 +22,19 @@ const aiTipUnavailable = {
   difficulty: 'beginner'
 };
 
-const phoneticsUnavailable = {
-  phonetic_transcription: '',
-  pronunciation_guide: 'Pronunciation guide unavailable',
-  word_breakdown: [],
-  pronunciation_explanation: 'Pronunciation explanation unavailable',
-  audio_description: ''
-};
-
 export const useTranslate = () => {
   const [result, setResult] = useState(emptyResult);
   const [isLoading, setIsLoading] = useState(false);
   const [stageMessage, setStageMessage] = useState('');
   const [error, setError] = useState('');
 
-  const lookup = async (rawText) => {
-    const text = rawText.trim();
+  const isInlineValidationError = (requestError) => {
+    return requestError?.status === 422;
+  };
+
+  const lookup = async (rawInput) => {
+    const input = typeof rawInput === 'string' ? { text: rawInput } : rawInput;
+    const text = input.text.trim();
 
     if (!text) {
       return;
@@ -47,7 +46,7 @@ export const useTranslate = () => {
     setResult({ ...emptyResult, inputText: text });
 
     try {
-      const translation = await translateText(text);
+      const translation = await translateText({ text });
 
       setResult({
         inputText: text,
@@ -70,15 +69,34 @@ export const useTranslate = () => {
         }).catch(() => aiTipUnavailable)
       ]);
 
+      const genderPronunciations = await buildGenderPronunciationMap({
+        fetchPhonetics,
+        genderForms: translation.genderForms,
+        historyId: translation.historyId,
+        baseFrenchText: translation.frenchText,
+        basePhonetics: phonetics
+      });
+
       setStageMessage('Preparing AI tip...');
       setResult({
         inputText: text,
-        translation,
+        translation: {
+          ...translation,
+          genderPronunciations
+        },
         phonetics,
         aiTip
       });
     } catch (requestError) {
-      setError(requestError.message || 'Translation service temporarily unavailable.');
+      if (isInlineValidationError(requestError)) {
+        setResult({
+          ...emptyResult,
+          inputText: text,
+          invalidMessage: requestError.message || 'Not recognized / Non reconnu'
+        });
+      } else {
+        setError(requestError.message || 'Translation service temporarily unavailable.');
+      }
     } finally {
       setIsLoading(false);
       setStageMessage('');

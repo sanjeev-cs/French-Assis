@@ -14,7 +14,7 @@ const SearchBar = ({ onSearch, disabled, initialValue = '' }) => {
       return;
     }
 
-    onSearch(text);
+    onSearch({ text });
   };
 
   const handleKeyDown = (event) => {

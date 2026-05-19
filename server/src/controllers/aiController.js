@@ -22,7 +22,7 @@ export const phonetics = async (req, res, next) => {
         pronunciation_guide: result.pronunciation_guide || '',
         word_breakdown: (result.word_breakdown || []).map((item) => ({
           word: item.word || '',
-          translation: item.english_hint || '',
+          translation: item.translation || '',
           phonetic: item.phonetic || ''
         }))
       }

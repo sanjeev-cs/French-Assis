@@ -1,145 +1,118 @@
-import { env } from '../config/env.js';
+import { buildReadableGuideFromIpa } from '../utils/ipaGuide.js';
+import { callGroqJson, callGroqText, logGroqFallback, parseJsonSafely } from './groqClient.js';
 
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const getPhoneticsPrompt = () => `You are a Canadian French phonetics expert for English-speaking beginners. Given French text, silently verify the pronunciation before returning JSON.
 
-const PHONETICS_SYSTEM_PROMPT = `You are a French phonetics expert for English-speaking beginners. Given French text, silently verify the standard French pronunciation before returning JSON.
-
-Rules for the simplified pronunciation guide:
-- Use syllable-by-syllable English approximations separated by hyphens.
+Rules:
+- phonetic_transcription must be accurate IPA and must not drop any pronounced syllable.
+- For single words, include the full word pronunciation, not only the ending.
+- Use syllable dots in phonetic_transcription when helpful.
+- pronunciation_guide must be a simple syllable-by-syllable English approximation separated by hyphens.
 - Do not use IPA symbols in pronunciation_guide.
 - Do not use capital N to show nasal vowels.
 - Approximate French nasal vowels consistently:
-  - an/en/am/em sounds like "ahn" (comment -> koh-mahn)
-  - on/om sounds like "ohn" (bonjour -> bohn-zhoor)
-  - in/ain/ein sounds like "ehn"
-  - un sounds like "uhn"
+  - an/en/am/em -> "ahn"
+  - on/om -> "ohn"
+  - in/ain/ein -> "ehn"
+  - un -> "uhn"
+- Endings like "-ien" often sound like "ee-ehn" or "dyee-ehn" depending on the preceding consonant.
+- Endings like "-ienne" often sound like "ee-en" or "dyee-en" depending on the preceding consonant.
 - Mark silent endings in pronunciation_explanation, not pronunciation_guide.
-- For phrases, preserve natural French rhythm and do not over-pronounce final silent consonants.
-- If there are regional variants, choose standard metropolitan French and mention the variation briefly in pronunciation_explanation.
+- For phrases, preserve natural rhythm and do not over-pronounce final silent consonants.
+- If there are regional variants, follow Canadian French first and mention standard alternatives briefly in pronunciation_explanation when useful.
+- In word_breakdown, translation must be the English meaning of the French word when reasonably possible.
 
 Examples:
 - "Bonjour" -> pronunciation_guide: "bohn-zhoor"
-- "Comment ça va ?" -> pronunciation_guide: "koh-mahn sah vah"
-- "Je suis étudiant" -> pronunciation_guide: "zhuh swee zay-tew-dyahn"
+- "Comment ca va ?" -> pronunciation_guide: "koh-mahn sah vah"
+- "Je suis etudiant" -> pronunciation_guide: "zhuh swee zay-tew-dyahn"
+- "indien" -> phonetic_transcription: "/ɛ̃.djɛ̃/" and pronunciation_guide: "ehn-dyehn"
+- "indienne" -> phonetic_transcription: "/ɛ̃.djɛn/" and pronunciation_guide: "ehn-dyen"
 
 Return ONLY valid JSON in this exact format (no markdown, no explanation outside JSON):
 {
   "phonetic_transcription": "IPA transcription here",
   "pronunciation_guide": "Simplified English pronunciation guide",
-  "word_breakdown": [{ "word": "french word", "phonetic": "IPA", "english_hint": "say it like..." }],
+  "word_breakdown": [{ "word": "french word", "translation": "English meaning", "phonetic": "IPA", "english_hint": "say it like..." }],
   "pronunciation_explanation": "Beginner-friendly explanation of why the word or sentence is pronounced this way. Mention silent letters, nasal vowels, liaison, dropped endings, or French sound rules when relevant.",
   "audio_description": "Brief description of how each sound is formed"
 }`;
 
-const extractJson = (content) => {
-  const trimmed = content.trim();
+const normalizeWordBreakdown = (items) => {
+  return (Array.isArray(items) ? items : []).map((item) => {
+    const phonetic = item?.phonetic || '';
+    const derivedGuide = buildReadableGuideFromIpa(phonetic);
 
-  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-    return trimmed;
-  }
-
-  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-
-  if (fencedMatch?.[1]) {
-    return fencedMatch[1].trim();
-  }
-
-  const firstBrace = trimmed.indexOf('{');
-  const lastBrace = trimmed.lastIndexOf('}');
-
-  if (firstBrace >= 0 && lastBrace > firstBrace) {
-    return trimmed.slice(firstBrace, lastBrace + 1);
-  }
-
-  return trimmed;
-};
-
-const logGroqFallback = (context, error) => {
-  if (env.nodeEnv !== 'production') {
-    console.warn(`Groq ${context} fallback:`, error.message);
-  }
-};
-
-const parseJsonSafely = (content, fallback) => {
-  try {
-    return JSON.parse(extractJson(content));
-  } catch (error) {
-    logGroqFallback('JSON parse', error);
-    return fallback;
-  }
-};
-
-const callGroq = async (messages) => {
-  if (!env.groqApiKey) {
-    throw new Error('GROQ_API_KEY is required');
-  }
-
-  const response = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.groqApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: env.groqModel,
-      temperature: 0.1,
-      response_format: { type: 'json_object' },
-      messages
-    })
+    return {
+      word: item?.word || '',
+      translation: item?.translation || '',
+      phonetic,
+      english_hint: derivedGuide || item?.english_hint || ''
+    };
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'Groq API request failed');
-  }
-
-  return data.choices?.[0]?.message?.content || '';
 };
 
-const callGroqText = async (messages) => {
-  if (!env.groqApiKey) {
-    throw new Error('GROQ_API_KEY is required');
+const isNotRecognizedPhonetics = (result) => {
+  const guide = String(result?.pronunciation_guide || '').toLowerCase();
+  const explanation = String(result?.pronunciation_explanation || '').toLowerCase();
+  const ipa = String(result?.phonetic_transcription || '').trim();
+
+  if (ipa) {
+    return false;
   }
 
-  const response = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.groqApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: env.groqModel,
-      temperature: 0.45,
-      messages
-    })
-  });
+  return (
+    guide.includes('unavailable') ||
+    explanation.includes('unavailable') ||
+    explanation.includes('not a valid french text') ||
+    explanation.includes('not valid') ||
+    explanation.includes('not recognized') ||
+    explanation.includes('not recognised')
+  );
+};
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'Groq API request failed');
+const normalizePhoneticsResult = (result) => {
+  if (isNotRecognizedPhonetics(result)) {
+    return {
+      phonetic_transcription: '',
+      pronunciation_guide: 'Not recognized / Non reconnu',
+      word_breakdown: [],
+      pronunciation_explanation: '',
+      audio_description: ''
+    };
   }
 
-  return data.choices?.[0]?.message?.content || '';
+  const phoneticTranscription = result?.phonetic_transcription || '';
+  const derivedGuide = buildReadableGuideFromIpa(phoneticTranscription);
+
+  return {
+    phonetic_transcription: phoneticTranscription,
+    pronunciation_guide: derivedGuide || result?.pronunciation_guide || 'Pronunciation guide unavailable',
+    word_breakdown: normalizeWordBreakdown(result?.word_breakdown),
+    pronunciation_explanation: result?.pronunciation_explanation || 'Pronunciation explanation unavailable',
+    audio_description: result?.audio_description || 'Audio description unavailable'
+  };
 };
 
 export const getPhonetics = async (frenchText) => {
   const fallback = {
     phonetic_transcription: '',
-    pronunciation_guide: 'Pronunciation guide unavailable',
+    pronunciation_guide: 'Not recognized / Non reconnu',
     word_breakdown: [],
-    pronunciation_explanation: 'Pronunciation explanation unavailable',
-    audio_description: 'Audio description unavailable'
+    pronunciation_explanation: '',
+    audio_description: ''
   };
 
   try {
-    const content = await callGroq([
-      { role: 'system', content: PHONETICS_SYSTEM_PROMPT },
-      { role: 'user', content: frenchText }
-    ]);
+    const content = await callGroqJson({
+      temperature: 0,
+      messages: [
+        { role: 'system', content: getPhoneticsPrompt() },
+        { role: 'user', content: frenchText }
+      ]
+    });
 
-    return parseJsonSafely(content, fallback);
+    return normalizePhoneticsResult(parseJsonSafely(content, fallback));
   } catch (error) {
     logGroqFallback('phonetics', error);
     return fallback;
@@ -159,7 +132,7 @@ export const getAiTip = async (word, translation) => {
     difficulty: 'beginner'
   };
 
-  const prompt = `You are a French language coach. For the English word '${word}' which translates to '${translation}' in French, provide a short memory tip, common usage example, pronunciation for the French example sentence, and one common mistake to avoid. Return ONLY valid JSON:
+  const prompt = `You are a French language coach. For the English word or phrase '${word}' which translates to '${translation}' in Canadian French, provide a short memory tip, one natural usage example in Canadian French, pronunciation for the French example sentence, and one common mistake to avoid. Make the French example correct and natural for learners. Return ONLY valid JSON:
 {
   "memory_tip": "...",
   "example_sentence": {
@@ -173,7 +146,7 @@ export const getAiTip = async (word, translation) => {
 }`;
 
   try {
-    const content = await callGroq([{ role: 'user', content: prompt }]);
+    const content = await callGroqJson({ temperature: 0, messages: [{ role: 'user', content: prompt }] });
     return parseJsonSafely(content, fallback);
   } catch (error) {
     logGroqFallback('AI tip', error);
@@ -191,15 +164,18 @@ export const getChatResponse = async ({ message, history = [] }) => {
     }));
 
   try {
-    const content = await callGroqText([
-      {
-        role: 'system',
-        content:
-          'You are FrenchEase Assistant, a concise French language tutor. Help with French translation, pronunciation, grammar, vocabulary, usage, memorization, and practice. Give clear beginner-friendly answers. Do not use markdown formatting, bold markers, asterisks, or code fences. Use short plain-text lines or simple hyphen lists. For pronunciation, be precise and conservative: say readable guides are approximations, prefer standard metropolitan French, avoid inventing sound rules, and mention silent letters, nasal vowels, liaison, or dropped endings only when relevant. Include French examples with English translations when useful. If the question is unrelated to French learning, politely redirect to French learning help.'
-      },
-      ...safeHistory,
-      { role: 'user', content: message }
-    ]);
+    const content = await callGroqText({
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are FrenchEase Assistant, a concise French language tutor. Help with French translation, pronunciation, grammar, vocabulary, usage, memorization, and practice. Give clear beginner-friendly answers. Do not use markdown formatting, bold markers, asterisks, or code fences. Use short plain-text lines or simple hyphen lists. For pronunciation, be precise and conservative: say readable guides are approximations, prefer Canadian French, avoid inventing sound rules, and mention silent letters, nasal vowels, liaison, or dropped endings only when relevant. Include French examples with English translations when useful. If the question is unrelated to French learning, politely redirect to French learning help.'
+        },
+        ...safeHistory,
+        { role: 'user', content: message }
+      ]
+    });
 
     return {
       answer: content.trim() || 'I could not generate a response. Please try again.'

@@ -17,15 +17,22 @@ const ResultCard = ({ result }) => {
   return (
     <article className="card result-card fade-in">
       <div className="result-header">
-        <p className="translation-path">
-          Detected {sourceName} to {targetName}
-        </p>
+        <div className="result-heading-copy">
+          <p className="translation-path">
+            Detected {sourceName} to {targetName}
+          </p>
+          {result.translation.targetLang === 'fr' ? (
+            <p className="translation-variant-badge">Translated in Canadian French</p>
+          ) : null}
+        </div>
         <span className="language-chip">{result.translation.targetLang.toUpperCase()}</span>
       </div>
 
       <div className="translated-line">
         <h2>{translatedText}</h2>
       </div>
+
+      {result.translation.translationNote ? <p className="translation-note">{result.translation.translationNote}</p> : null}
 
       <div className="action-row">
         <button className="secondary-button" type="button" onClick={copyTranslation}>
