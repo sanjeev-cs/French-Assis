@@ -5,7 +5,7 @@ import Loader from './components/Loader.jsx';
 import LogoutModal from './components/LogoutModal.jsx';
 import Home from './pages/Home.jsx';
 import History from './pages/History.jsx';
-import { fetchCurrentUser, logoutUser } from './services/api.js';
+import { fetchCurrentUser, logoutUser, onUnauthorized } from './services/api.js';
 
 const SearchIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -46,6 +46,14 @@ const App = () => {
     };
 
     loadSession();
+  }, []);
+
+  useEffect(() => {
+    return onUnauthorized(() => {
+      setUser(null);
+      setReplaySearch(null);
+      setView('home');
+    });
   }, []);
 
   const handleSearchAgain = (text) => {

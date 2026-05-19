@@ -1,4 +1,5 @@
 const API_URL = (import.meta.env.BACKEND_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+const AUTH_EVENT = 'frenchease:unauthorized';
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${API_URL}${path}`, {
@@ -17,6 +18,10 @@ const request = async (path, options = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new Event(AUTH_EVENT));
+    }
+
     throw new Error(data.message || 'Request failed');
   }
 
@@ -83,4 +88,9 @@ export const logoutUser = async () => {
 
 export const fetchCurrentUser = async () => {
   return request('/api/auth/me');
+};
+
+export const onUnauthorized = (handler) => {
+  window.addEventListener(AUTH_EVENT, handler);
+  return () => window.removeEventListener(AUTH_EVENT, handler);
 };

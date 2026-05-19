@@ -33,8 +33,8 @@ export const verifyToken = (token) => {
 
 export const getCookieOptions = () => ({
   httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+  secure: env.nodeEnv === 'production' || env.clientOrigin.startsWith('https://'),
+  sameSite: env.clientOrigin.startsWith('https://') ? 'none' : 'lax',
   maxAge: TOKEN_MAX_AGE_MS,
   path: '/'
 });
