@@ -1,5 +1,9 @@
 import { HttpError } from '../utils/httpError.js';
-import { collectProviderCandidates, selectProviderTranslation } from '../utils/providerTranslationSelection.js';
+import {
+  collectProviderCandidates,
+  selectProviderTranslation,
+  summarizeProviderMatches
+} from '../utils/providerTranslationSelection.js';
 
 const MYMEMORY_URL = 'https://api.mymemory.translated.net/get';
 
@@ -27,10 +31,15 @@ export const translateText = async ({ text, sourceLang, targetLang, textType = '
       responseDataText: data.responseData.translatedText,
       matches: Array.isArray(data.matches) ? data.matches : []
     });
+    const providerMeta = summarizeProviderMatches({
+      inputText: text,
+      matches: Array.isArray(data.matches) ? data.matches : []
+    });
 
     return {
       translatedText,
       candidates,
+      providerMeta,
       sourceLang,
       targetLang
     };

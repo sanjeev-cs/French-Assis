@@ -2,27 +2,43 @@ const API_URL = (import.meta.env.BACKEND_API_URL || 'http://localhost:5000').rep
 const AUTH_EVENT = 'frenchease:unauthorized';
 
 const request = async (path, options = {}) => {
-  const response = await fetch(`${API_URL}${path}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    },
-    ...options
-  });
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    });
+  } catch (error) {
+    throw new Error('Unable to reach the server. Check your connection or make sure the backend is running.');
+  }
 
   if (response.status === 204) {
     return null;
   }
 
-  const data = await response.json();
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch (error) {
+    if (!response.ok) {
+      throw new Error('The server returned an unexpected response. Please try again.');
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
       window.dispatchEvent(new Event(AUTH_EVENT));
     }
 
-    throw new Error(data.message || 'Request failed');
+    const error = new Error(data?.message || 'Request failed');
+    error.status = response.status;
+    throw error;
   }
 
   return data;

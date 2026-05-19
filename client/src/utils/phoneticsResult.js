@@ -1,9 +1,15 @@
+export const NOT_RECOGNIZED_MESSAGE = 'Not recognized / Non reconnu';
+
 export const phoneticsUnavailable = {
   phonetic_transcription: '',
-  pronunciation_guide: 'Pronunciation guide unavailable',
+  pronunciation_guide: NOT_RECOGNIZED_MESSAGE,
   word_breakdown: [],
-  pronunciation_explanation: 'Pronunciation explanation unavailable',
+  pronunciation_explanation: '',
   audio_description: ''
+};
+
+export const isNotRecognizedPhonetics = (phonetics) => {
+  return !phonetics?.phonetic_transcription && phonetics?.pronunciation_guide === NOT_RECOGNIZED_MESSAGE;
 };
 
 const normalizeLookupKey = (value) => String(value || '').trim().toLowerCase();

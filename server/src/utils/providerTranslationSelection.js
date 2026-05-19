@@ -53,6 +53,22 @@ export const collectProviderCandidates = ({ textType, responseDataText, matches 
 
 const isExactSegmentMatch = (inputText, segment) => normalizeText(inputText) === normalizeText(segment);
 
+export const summarizeProviderMatches = ({ inputText, matches = [] }) => {
+  const exactMatches = (Array.isArray(matches) ? matches : []).filter((match) => isExactSegmentMatch(inputText, match.segment || ''));
+  const qualities = exactMatches
+    .map((match) => Number(match.quality) || 0)
+    .filter((quality) => Number.isFinite(quality));
+  const overallQualities = (Array.isArray(matches) ? matches : [])
+    .map((match) => Number(match.quality) || 0)
+    .filter((quality) => Number.isFinite(quality));
+
+  return {
+    exactMatchCount: exactMatches.length,
+    bestExactQuality: qualities.length ? Math.max(...qualities) : 0,
+    bestOverallQuality: overallQualities.length ? Math.max(...overallQualities) : 0
+  };
+};
+
 const buildCandidateScore = ({ inputText, candidateText, segment, quality, source, textType }) => {
   const normalizedCandidate = normalizeText(candidateText);
 

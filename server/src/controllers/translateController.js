@@ -8,6 +8,7 @@ import {
   refineFrenchTranslation
 } from '../services/groqTranslationService.js';
 import { canonicalizeFrenchWord } from '../utils/frenchWordCanonicalization.js';
+import { shouldRejectLowConfidenceTranslation } from '../utils/translationInputValidation.js';
 import { inferFrenchGenderForms } from '../utils/frenchGenderInference.js';
 import { keepRelatedWord } from '../utils/translationGuards.js';
 
@@ -35,6 +36,20 @@ export const translateText = async (req, res, next) => {
     });
     const baseTranslatedText = baseTranslation.translatedText.trim();
     const providerCandidates = Array.isArray(baseTranslation.candidates) ? baseTranslation.candidates : [];
+
+    if (
+      shouldRejectLowConfidenceTranslation({
+        sourceText,
+        textType: analysis.text_type,
+        translatedText: baseTranslatedText,
+        providerMeta: baseTranslation.providerMeta
+      })
+    ) {
+      throw new HttpError(
+        "I couldn't recognize that as a real English or French word or phrase. Try a standard word, fix any typos, or enter a short sentence.",
+        422
+      );
+    }
 
     let translatedText = baseTranslatedText;
     let frenchText = sourceLang === 'fr' ? sourceText : translatedText;

@@ -52,7 +52,36 @@ const normalizeWordBreakdown = (items) => {
   });
 };
 
+const isNotRecognizedPhonetics = (result) => {
+  const guide = String(result?.pronunciation_guide || '').toLowerCase();
+  const explanation = String(result?.pronunciation_explanation || '').toLowerCase();
+  const ipa = String(result?.phonetic_transcription || '').trim();
+
+  if (ipa) {
+    return false;
+  }
+
+  return (
+    guide.includes('unavailable') ||
+    explanation.includes('unavailable') ||
+    explanation.includes('not a valid french text') ||
+    explanation.includes('not valid') ||
+    explanation.includes('not recognized') ||
+    explanation.includes('not recognised')
+  );
+};
+
 const normalizePhoneticsResult = (result) => {
+  if (isNotRecognizedPhonetics(result)) {
+    return {
+      phonetic_transcription: '',
+      pronunciation_guide: 'Not recognized / Non reconnu',
+      word_breakdown: [],
+      pronunciation_explanation: '',
+      audio_description: ''
+    };
+  }
+
   const phoneticTranscription = result?.phonetic_transcription || '';
   const derivedGuide = buildReadableGuideFromIpa(phoneticTranscription);
 
@@ -68,10 +97,10 @@ const normalizePhoneticsResult = (result) => {
 export const getPhonetics = async (frenchText) => {
   const fallback = {
     phonetic_transcription: '',
-    pronunciation_guide: 'Pronunciation guide unavailable',
+    pronunciation_guide: 'Not recognized / Non reconnu',
     word_breakdown: [],
-    pronunciation_explanation: 'Pronunciation explanation unavailable',
-    audio_description: 'Audio description unavailable'
+    pronunciation_explanation: '',
+    audio_description: ''
   };
 
   try {

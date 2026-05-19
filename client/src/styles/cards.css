@@ -23,6 +23,20 @@
   overflow: hidden;
 }
 
+.invalid-translation-card {
+  display: grid;
+  gap: 8px;
+  text-align: center;
+  justify-items: center;
+  padding-block: 24px;
+}
+
+.invalid-translation-card h3 {
+  margin: 0;
+  font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.3rem);
+  line-height: 1.2;
+}
+
 .result-card::before {
   content: '';
   position: absolute;

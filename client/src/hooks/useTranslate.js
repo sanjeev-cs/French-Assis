@@ -6,7 +6,8 @@ const emptyResult = {
   inputText: '',
   translation: null,
   phonetics: null,
-  aiTip: null
+  aiTip: null,
+  invalidMessage: ''
 };
 
 const aiTipUnavailable = {
@@ -26,6 +27,10 @@ export const useTranslate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stageMessage, setStageMessage] = useState('');
   const [error, setError] = useState('');
+
+  const isInlineValidationError = (requestError) => {
+    return requestError?.status === 422;
+  };
 
   const lookup = async (rawInput) => {
     const input = typeof rawInput === 'string' ? { text: rawInput } : rawInput;
@@ -83,7 +88,15 @@ export const useTranslate = () => {
         aiTip
       });
     } catch (requestError) {
-      setError(requestError.message || 'Translation service temporarily unavailable.');
+      if (isInlineValidationError(requestError)) {
+        setResult({
+          ...emptyResult,
+          inputText: text,
+          invalidMessage: requestError.message || 'Not recognized / Non reconnu'
+        });
+      } else {
+        setError(requestError.message || 'Translation service temporarily unavailable.');
+      }
     } finally {
       setIsLoading(false);
       setStageMessage('');

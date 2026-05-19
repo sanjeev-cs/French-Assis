@@ -21,6 +21,7 @@ const FormPronunciationCard = ({ label, value, pronunciation }) => {
 const PhoneticDisplay = ({ phonetics, frenchText, genderForms, genderPronunciations }) => {
   const [showIpa, setShowIpa] = useState(false);
   const hasGenderPronunciations = Boolean(genderForms?.applicable && (genderPronunciations?.masculine || genderPronunciations?.feminine));
+  const isNotRecognized = !phonetics.phonetic_transcription && phonetics.pronunciation_guide === 'Not recognized / Non reconnu';
 
   return (
     <section className="card phonetic-card fade-in">
@@ -33,12 +34,14 @@ const PhoneticDisplay = ({ phonetics, frenchText, genderForms, genderPronunciati
           <span className="label">Read this out loud</span>
           <p className="readable-pronunciation">{phonetics.pronunciation_guide || 'Guide unavailable'}</p>
         </div>
-        <button className="secondary-button" type="button" onClick={() => speakFrench(frenchText)}>
-          Listen
-        </button>
+        {!isNotRecognized ? (
+          <button className="secondary-button" type="button" onClick={() => speakFrench(frenchText)}>
+            Listen
+          </button>
+        ) : null}
       </div>
 
-      {hasGenderPronunciations ? (
+      {hasGenderPronunciations && !isNotRecognized ? (
         <div className="form-pronunciation-grid">
           <FormPronunciationCard
             label="Masculine"
@@ -53,21 +56,21 @@ const PhoneticDisplay = ({ phonetics, frenchText, genderForms, genderPronunciati
         </div>
       ) : null}
 
-      {phonetics.pronunciation_explanation ? (
+      {phonetics.pronunciation_explanation && !isNotRecognized ? (
         <div className="pronunciation-explanation">
           <span className="label">Why it sounds this way</span>
           <p>{phonetics.pronunciation_explanation}</p>
         </div>
       ) : null}
 
-      {phonetics.audio_description ? (
+      {phonetics.audio_description && !isNotRecognized ? (
         <details className="sound-details">
           <summary>More sound detail</summary>
           <p>{phonetics.audio_description}</p>
         </details>
       ) : null}
 
-      {phonetics.phonetic_transcription ? (
+      {phonetics.phonetic_transcription && !isNotRecognized ? (
         <div className="ipa-details">
           <button className="text-button" type="button" onClick={() => setShowIpa((current) => !current)}>
             {showIpa ? 'Hide IPA symbols' : 'Show IPA symbols'}
