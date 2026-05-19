@@ -17,7 +17,14 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.clientOrigin,
+    origin: (origin, callback) => {
+      if (!origin || origin.replace(/\/+$/, '') === env.clientOrigin) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
   })
 );
