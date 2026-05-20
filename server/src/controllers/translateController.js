@@ -7,6 +7,7 @@ import {
   refineEnglishTranslation,
   refineFrenchTranslation
 } from '../services/groqTranslationService.js';
+import { getWordAlignment } from '../services/groqAlignmentService.js';
 import { canonicalizeFrenchWord } from '../utils/frenchWordCanonicalization.js';
 import { shouldRejectLowConfidenceTranslation } from '../utils/translationInputValidation.js';
 import { inferFrenchGenderForms } from '../utils/frenchGenderInference.js';
@@ -56,6 +57,7 @@ export const translateText = async (req, res, next) => {
     let englishText = sourceLang === 'en' ? sourceText : translatedText;
     let genderForms = null;
     let translationNote = '';
+    let wordAlignment = [];
 
     if (targetLang === 'fr') {
       const details = await refineFrenchTranslation({
@@ -132,6 +134,14 @@ export const translateText = async (req, res, next) => {
       };
     }
 
+    wordAlignment = await getWordAlignment({
+      sourceText: englishText,
+      translatedText: frenchText,
+      sourceLang: 'en',
+      targetLang: 'fr',
+      textType: analysis.text_type
+    });
+
     const history = await createHistoryEntry({
       userId: req.user.id,
       inputText: sourceText,
@@ -147,6 +157,7 @@ export const translateText = async (req, res, next) => {
       targetLang,
       genderForms,
       translationNote,
+      wordAlignment,
       historyId: history._id
     });
   } catch (error) {

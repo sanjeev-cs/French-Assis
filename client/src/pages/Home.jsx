@@ -63,6 +63,7 @@ const Home = ({ replaySearch }) => {
                   englishText={result.translation.englishText}
                   frenchText={result.translation.frenchText}
                   words={result.phonetics.word_breakdown}
+                  alignment={result.translation.wordAlignment}
                 />
               ) : null}
               {result.aiTip ? <AiTipCard tip={result.aiTip} /> : null}
