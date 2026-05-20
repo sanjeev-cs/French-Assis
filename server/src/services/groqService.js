@@ -1,4 +1,8 @@
-import { buildReadableGuideFromIpa } from '../utils/ipaGuide.js';
+import {
+  buildReadableGuideFromIpa,
+  hasUsableReadableGuide,
+  normalizeReadableGuide
+} from '../utils/ipaGuide.js';
 import { callGroqJson, callGroqText, logGroqFallback, parseJsonSafely } from './groqClient.js';
 
 const getPhoneticsPrompt = () => `You are a Canadian French phonetics expert for English-speaking beginners. Given French text, silently verify the pronunciation before returning JSON.
@@ -8,6 +12,7 @@ Rules:
 - For single words, include the full word pronunciation, not only the ending.
 - Use syllable dots in phonetic_transcription when helpful.
 - pronunciation_guide must be a simple syllable-by-syllable English approximation separated by hyphens.
+- pronunciation_guide is the main learner-facing reading aid. Make it sound natural for an English speaker, not just mechanically converted from IPA.
 - Do not use IPA symbols in pronunciation_guide.
 - Do not use capital N to show nasal vowels.
 - Approximate French nasal vowels consistently:
@@ -17,6 +22,9 @@ Rules:
   - un -> "uhn"
 - Endings like "-ien" often sound like "ee-ehn" or "dyee-ehn" depending on the preceding consonant.
 - Endings like "-ienne" often sound like "ee-en" or "dyee-en" depending on the preceding consonant.
+- Endings like "-ain", "-ein", and "-in" must stay distinct from "-aine", "-enne", and "-ine" when the sounds differ.
+- For masculine/feminine pairs such as "-ien/-ienne", "-ain/-aine", "-ais/-aise", and "-on/-onne", never reuse the same pronunciation_guide if the endings are pronounced differently.
+- Do not invent silent internal consonants. For example, "c" before "a", "o", or "u" is usually pronounced like "k".
 - Mark silent endings in pronunciation_explanation, not pronunciation_guide.
 - For phrases, preserve natural rhythm and do not over-pronounce final silent consonants.
 - If there are regional variants, follow Canadian French first and mention standard alternatives briefly in pronunciation_explanation when useful.
@@ -28,6 +36,8 @@ Examples:
 - "Je suis etudiant" -> pronunciation_guide: "zhuh swee zay-tew-dyahn"
 - "indien" -> phonetic_transcription: "/ɛ̃.djɛ̃/" and pronunciation_guide: "ehn-dyehn"
 - "indienne" -> phonetic_transcription: "/ɛ̃.djɛn/" and pronunciation_guide: "ehn-dyen"
+- "américain" -> phonetic_transcription: "/a.me.ʁi.kɛ̃/" and pronunciation_guide: "ah-may-ree-kan"
+- "américaine" -> phonetic_transcription: "/a.me.ʁi.kɛn/" and pronunciation_guide: "ah-may-ree-ken"
 
 Return ONLY valid JSON in this exact format (no markdown, no explanation outside JSON):
 {
@@ -42,12 +52,13 @@ const normalizeWordBreakdown = (items) => {
   return (Array.isArray(items) ? items : []).map((item) => {
     const phonetic = item?.phonetic || '';
     const derivedGuide = buildReadableGuideFromIpa(phonetic);
+    const providedGuide = normalizeReadableGuide(item?.english_hint || '');
 
     return {
       word: item?.word || '',
       translation: item?.translation || '',
       phonetic,
-      english_hint: derivedGuide || item?.english_hint || ''
+      english_hint: hasUsableReadableGuide(providedGuide) ? providedGuide : derivedGuide || ''
     };
   });
 };
@@ -84,10 +95,14 @@ const normalizePhoneticsResult = (result) => {
 
   const phoneticTranscription = result?.phonetic_transcription || '';
   const derivedGuide = buildReadableGuideFromIpa(phoneticTranscription);
+  const providedGuide = normalizeReadableGuide(result?.pronunciation_guide || '');
 
   return {
     phonetic_transcription: phoneticTranscription,
-    pronunciation_guide: derivedGuide || result?.pronunciation_guide || 'Pronunciation guide unavailable',
+    pronunciation_guide:
+      (hasUsableReadableGuide(providedGuide) ? providedGuide : '') ||
+      derivedGuide ||
+      'Pronunciation guide unavailable',
     word_breakdown: normalizeWordBreakdown(result?.word_breakdown),
     pronunciation_explanation: result?.pronunciation_explanation || 'Pronunciation explanation unavailable',
     audio_description: result?.audio_description || 'Audio description unavailable'

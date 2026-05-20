@@ -1,30 +1,39 @@
 const IPA_SEQUENCE_MAP = [
-  ['ɑ̃', 'ahn'],
-  ['ɔ̃', 'ohn'],
-  ['ɛ̃', 'ehn'],
-  ['œ̃', 'uhn'],
-  ['dʒ', 'j'],
-  ['tʃ', 'ch'],
+  ['\u025B\u0303', 'ehn'],
+  ['\u0251\u0303', 'ahn'],
+  ['\u0254\u0303', 'ohn'],
+  ['\u0153\u0303', 'uhn'],
+  ['dj\u025Bn', 'dyen'],
+  ['dj\u025B\u0303', 'dyehn'],
+  ['tj\u025Bn', 'tyen'],
+  ['tj\u025B\u0303', 'tyehn'],
+  ['sj\u025Bn', 'syen'],
+  ['sj\u025B\u0303', 'syehn'],
+  ['d\u0292', 'j'],
+  ['t\u0283', 'ch'],
   ['dj', 'dy'],
   ['tj', 'ty'],
   ['sj', 'sy'],
-  ['ʃ', 'sh'],
-  ['ʒ', 'zh'],
-  ['ɲ', 'ny'],
-  ['ʁ', 'r'],
-  ['ɥ', 'wee'],
+  ['\u0283', 'sh'],
+  ['\u0292', 'zh'],
+  ['\u0272', 'ny'],
+  ['\u0281', 'r'],
+  ['\u0265', 'wee'],
+  ['\u025Bn', 'en'],
+  ['\u0251n', 'ahn'],
+  ['\u0254n', 'on'],
   ['j', 'y'],
   ['w', 'w'],
-  ['ø', 'uh'],
-  ['œ', 'uh'],
-  ['ə', 'uh'],
+  ['\u00F8', 'uh'],
+  ['\u0153', 'uh'],
+  ['\u0259', 'uh'],
   ['e', 'ay'],
-  ['ɛ', 'eh'],
+  ['\u025B', 'eh'],
   ['i', 'ee'],
   ['y', 'ee'],
   ['u', 'oo'],
   ['o', 'oh'],
-  ['ɔ', 'aw'],
+  ['\u0254', 'aw'],
   ['a', 'ah'],
   ['b', 'b'],
   ['d', 'd'],
@@ -45,9 +54,35 @@ const normalizeIpa = (ipa) => {
   return String(ipa || '')
     .trim()
     .replace(/[\/\[\]]/g, '')
-    .replace(/['ˈˌ]/g, '')
+    .replace(/['ËˆËŒˈˌ]/g, '')
     .replace(/\s+/g, '')
     .replace(/\./g, '-');
+};
+
+export const normalizeReadableGuide = (guide) => {
+  return String(guide || '')
+    .trim()
+    .replace(/[*_`]/g, '')
+    .replace(/\s*-\s*/g, '-')
+    .replace(/\s+/g, ' ')
+    .replace(/(^-|-$)/g, '');
+};
+
+export const hasUsableReadableGuide = (guide) => {
+  const normalized = normalizeReadableGuide(guide).toLowerCase();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return !(
+    normalized.includes('unavailable') ||
+    normalized.includes('not recognized') ||
+    normalized.includes('not recognised') ||
+    normalized.includes('pronunciation guide') ||
+    normalized.includes('ipa') ||
+    normalized.includes('transcription')
+  );
 };
 
 const consumeMappedToken = (remaining) => {
@@ -94,6 +129,5 @@ export const buildReadableGuideFromIpa = (ipa) => {
   return output
     .replace(/-+/g, '-')
     .replace(/(^-|-$)/g, '')
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
     .toLowerCase();
 };
