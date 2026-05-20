@@ -107,11 +107,11 @@
 .extras-chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--color-accent-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
+  background: var(--color-surface-raised);
   padding: 5px 10px;
-  color: var(--color-accent);
+  color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.02em;
