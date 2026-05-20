@@ -8,7 +8,16 @@ const AiTipCard = ({ tip }) => {
   return (
     <section className="card ai-tip-card fade-in">
       <button className="collapse-button" type="button" onClick={() => setIsOpen((current) => !current)}>
-        <span>AI Learning Tip</span>
+        <span className="collapse-copy">
+          <span>AI Learning Tip</span>
+          {!isOpen ? (
+            <span className="collapse-chip-row" aria-label="AI tip content available">
+              <span className="collapse-chip">Memory tip</span>
+              <span className="collapse-chip">Example</span>
+              <span className="collapse-chip">Common mistake</span>
+            </span>
+          ) : null}
+        </span>
         <span>{isOpen ? 'Close' : 'Open'}</span>
       </button>
 

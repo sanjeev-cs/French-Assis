@@ -63,6 +63,13 @@ const PhoneticDisplay = ({ phonetics, frenchText, genderForms, genderPronunciati
         </div>
       ) : null}
 
+      {!isNotRecognized && (phonetics.audio_description || phonetics.phonetic_transcription) ? (
+        <div className="extras-chip-row" aria-label="More pronunciation details available">
+          {phonetics.audio_description ? <span className="extras-chip">More sound detail</span> : null}
+          {phonetics.phonetic_transcription ? <span className="extras-chip">IPA symbols</span> : null}
+        </div>
+      ) : null}
+
       {phonetics.audio_description && !isNotRecognized ? (
         <details className="sound-details">
           <summary>More sound detail</summary>
