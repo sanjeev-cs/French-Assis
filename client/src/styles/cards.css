@@ -225,6 +225,31 @@
   color: inherit;
 }
 
+.collapse-copy {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.collapse-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.collapse-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  padding: 4px 10px;
+  color: var(--color-text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .tip-content {
   display: grid;
   gap: 14px;
